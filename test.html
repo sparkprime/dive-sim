@@ -1,0 +1,327 @@
+<html>
+<head>
+<meta charset='UTF-8'>
+<title>Title of the document</title>
+</head>
+
+<style>
+.dial {
+    width: 64px;
+    height: 12px;
+    border: black;
+    border-style: solid;
+    border-width: 1px;
+}
+.dial div {
+    width: 50%;
+    height: 100%;
+    background: cyan;
+}
+#sky {
+   width: 640px;
+   height: 80px;
+   background-color: #a8c6ff;
+}
+.sea {
+   width: 640px;
+   height: 500px;
+   background-color: #1969ff;
+}
+.sea#bottom {
+   height: 21px;
+}
+.seabed {
+   width: 640px;
+   height: 50px;
+   background-color: #e6cfa3;
+}
+img#diver {
+    position: relative;
+    width:64px;
+}
+</style>
+
+<body>
+<h1>The Diving Game</h1>
+<p>Diving is easy! (Except when it's hard.)
+<p>Press UP to breathe in, DOWN to breathe out.</p>
+<p>Press [ to dump <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a> and ] to inflate.</p>
+<div id=info>
+</div>
+<div class=sky>
+</div>
+<div class=sea>
+<img id=diver src="diver.svg">
+</div>
+<div class=sea id=bottom>
+</div>
+<div class=seabed>
+</div>
+</body>
+
+<script>
+
+let up_pressed = false;
+let down_pressed = false;
+let left_pressed = false;
+let right_pressed = false;
+let left_sq_pressed = false;
+let right_sq_pressed = false;
+document.onkeydown = function(e) {
+    e = e || window.event;
+    if (e.keyCode == 38) {
+        up_pressed = true;
+    } else if (e.keyCode == 40) {
+        down_pressed = true;
+    } else if (e.keyCode == 37) {
+        left_pressed = true;
+    } else if (e.keyCode == 39) {
+        right_pressed = true;
+    } else if (e.keyCode == 219) {
+        left_sq_pressed = true;
+    } else if (e.keyCode == 221) {
+        right_sq_pressed = true;
+    } else {
+        console.log(e.keyCode);
+    }
+}
+document.onkeyup = function(e) {
+    e = e || window.event;
+    if (e.keyCode == 38) {
+        up_pressed = false;
+    } else if (e.keyCode == 40) {
+        down_pressed = false;
+    } else if (e.keyCode == 37) {
+        left_pressed = false;
+    } else if (e.keyCode == 39) {
+        right_pressed = false;
+    } else if (e.keyCode == 219) {
+        left_sq_pressed = false;
+    } else if (e.keyCode == 221) {
+        right_sq_pressed = false;
+    }
+}
+
+let water_density_kg_l = 1.025;
+let air_density_kg_l = 0.0012;
+let max_depth = 35;
+
+let body_mass_kg = 80;
+let body_displacement_l = 77;
+let resting_o2_consumption_l_s = 0.003;
+let swimming_o2_consumption_l_s = 0.03;
+let lung_capacity_l = 6;
+let lung_residual_volume_l = 1.2;
+let breathe_rate_l_s = 0.333 * lung_capacity_l;
+let weights_mass_kg = 6;
+
+let tank_o2_conc = 0.2095;
+let tank_contents_l = 2200;  // When fully pressurized
+let tank_volume_l = 10;  // At 1 ATM.
+let tank_mass_kg = 15;
+let tank_displacement_l = 17;
+
+let bcd_mass_kg = 5;
+let bcd_empty_displacement_l = 7;
+let bcd_max_contents_l = 8;
+let bcd_fill_rate_l_s = 6;
+let bcd_dump_rate_l_s = 4;
+
+let game_state = 'RUNNING';
+let lung_volume_l = 0.5 * lung_capacity_l;
+let lung_o2_conc = 0.19;
+let bcd_contents_l = 9;
+let swimming = false;
+let height_m = 0;  // Negative means underwater.
+let vertical_velocity_m_s = 0;
+
+function pressure_atm() {
+    if (height_m >= 0) {
+        return 1;
+    } else {
+        return 1 - 0.1 * height_m;
+    }
+}
+
+function tank_atm() {
+    return tank_contents_l / tank_volume_l;
+}
+
+function total_mass_kg() {
+    return body_mass_kg + weights_mass_kg + tank_mass_kg
+           + air_density_kg_l * tank_contents_l + bcd_mass_kg;
+}
+
+function bouyancy_n() {
+    let displacement_l = body_displacement_l + tank_displacement_l + bcd_empty_displacement_l
+                       + bcd_contents_l + lung_volume_l;
+    return (displacement_l * water_density_kg_l - total_mass_kg()) * 9.8;
+}
+
+function update_simulation(elapsed_s) {
+    if (game_state == 'RUNNING') {
+        if (left_sq_pressed && !right_sq_pressed) {
+            // Dump air from BCD.
+            bcd_contents_l -= bcd_dump_rate_l_s * elapsed_s;
+            if (bcd_contents_l < 0) {
+                bcd_contents_l = 0;
+            }
+        } else if (right_sq_pressed && !left_sq_pressed) {
+            // Inflate BCD via LPI.
+            let inflation_l = bcd_fill_rate_l_s * elapsed_s;
+            bcd_contents_l += inflation_l;
+            tank_contents_l -= inflation_l * pressure_atm();
+        }
+        if (bcd_contents_l > bcd_max_contents_l) {
+            // Safety valve opens.
+            bcd_contents_l = bcd_max_contents_l;
+        }
+
+        if (up_pressed && !down_pressed) {
+            // Breathe in from tank.
+            let inhaled_l = elapsed_s * breathe_rate_l_s;
+            if (lung_volume_l >= lung_capacity_l) inhaled_l = 0;
+            let old_o2 = lung_volume_l * lung_o2_conc;
+            let new_o2 = inhaled_l * tank_o2_conc;
+            lung_volume_l += inhaled_l;
+            tank_contents_l -= inhaled_l * pressure_atm();
+            lung_o2_conc = (old_o2 + new_o2) / lung_volume_l;
+        } else if (down_pressed && !up_pressed) {
+            // Breathe out (bubbles).
+            lung_volume_l -= elapsed_s * breathe_rate_l_s;
+            if (lung_volume_l < lung_residual_volume_l) lung_volume_l = lung_residual_volume_l;
+        }
+
+        // Lung O2 transfer.
+        let lung_o2_l = lung_o2_conc * lung_volume_l;
+
+        // Metabolism.
+        lung_o2_l -= elapsed_s * (
+            swimming ? swimming_o2_consumption_l_s : resting_o2_consumption_l_s);
+
+        lung_o2_conc = lung_o2_l / lung_volume_l;
+        blood_o2_sat = 0.8 + ((lung_o2_conc - 0.06) / (tank_o2_conc - 0.06)) * 0.2
+
+        // Bouyancy
+        let old_pressure_atm = pressure_atm();
+        let vertical_acceleration_m_s_s = bouyancy_n() / total_mass_kg();
+        vertical_velocity_m_s += vertical_acceleration_m_s_s * elapsed_s;
+        if (height_m >= 0) {
+            // Cannot float above the surface.
+            height_m = 0;
+            if (vertical_velocity_m_s >= 0) {
+                vertical_velocity_m_s = 0;
+            }
+        }
+        // Drag.
+        vertical_velocity_m_s = (
+            vertical_velocity_m_s
+            + 0.01 * Math.sign(-vertical_velocity_m_s) * vertical_velocity_m_s * vertical_velocity_m_s);
+
+        // Terminal velocity.
+        vertical_velocity_m_s = Math.max(-2, Math.min(2, vertical_velocity_m_s));
+
+        // Integrate motion.
+        height_m += vertical_velocity_m_s * elapsed_s;
+
+        // De/compression of air spaces.
+        let pressure_differential = pressure_atm() / old_pressure_atm;
+        lung_volume_l /= pressure_differential;
+        bcd_contents_l /= pressure_differential;
+
+        let diver = document.getElementById('diver');
+        diver.style['bottom'] = (height_m / max_depth) * 100 + '%';
+
+        // Game state changes:
+        if (blood_o2_sat <= 0.8) {
+            game_state = 'ASPHYXIATED';
+        }
+        if (lung_volume_l / lung_capacity_l > 1.1) {
+            game_state = 'EXPANSION_INJURY';
+        }
+        if (height_m < -35) {
+            game_state = 'COLLIDED_BOTTOM';
+        }
+    }
+}
+
+function color_from_pc(pc) {
+    if (pc < 25) {
+        return 'red';
+    } else if (pc < 50) {
+        return 'yellow';
+    } else {
+        return 'green';
+    }
+}
+
+function update_view() {
+    let info = document.getElementById('info');
+    if (game_state == 'RUNNING') {
+        blood_o2_dial_pc = (blood_o2_sat - 0.8) / 0.2 * 100;
+        info.innerHTML = [
+            '<table>',
+
+            '<tr>',
+            '<td>Blood O2 saturation:</td>',
+            '<td>' + (blood_o2_sat * 100).toFixed(1) + '%</td>',
+            '<td><div class=dial><div style="width: ' + (blood_o2_dial_pc).toFixed(0) + '%; background-color: ' + color_from_pc(blood_o2_dial_pc) + '"></div></div></td>',
+            '</tr>',
+
+            '<tr>',
+            '<td>Lung expansion:</td>',
+            '<td>' + (lung_volume_l / lung_capacity_l * 100).toFixed(0) + '%</td>',
+            '</tr>',
+
+            '<tr>',
+            '<td>Tank pressure:</td>',
+            '<td>' + (tank_atm()).toFixed(1) + ' atm</td>',
+            '</tr>',
+
+            '<tr>',
+            '<td>BCD inflation:</td>',
+            '<td>' + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0) + '%</td>',
+            '</tr>',
+
+            '<tr>',
+            '<td>Height:</td>',
+            '<td>' + (height_m).toFixed(2) + ' m</td>',
+            '</tr>',
+            '<tr>',
+
+            '<tr>',
+            '<td>Vertical velocity:</td>',
+            '<td>' + (vertical_velocity_m_s).toFixed(2) + ' m / s</td>',
+            '</tr>',
+            '<tr>',
+
+            '</table>',
+        ].join('');
+    } else {
+        info.innerHTML = 'Game over. Type: ' + game_state;
+    }
+}
+
+function tick() {
+    update_simulation(10 / 1000);
+    update_view();
+}
+
+setInterval(tick, 10); // Time in milliseconds
+// tick();
+
+</script>
+
+</html>
+
+<!--
+
+pressure in ears
+pressure in sinus
+equalizing
+
+clear mask
+
+narcosis
+
+decompression sickness
