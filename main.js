@@ -50,12 +50,15 @@ let max_depth = 35;
 
 let body_mass_kg = 80;
 let body_displacement_l = 77;
-let resting_o2_consumption_l_s = 0.003;
-let swimming_o2_consumption_l_s = 0.03;
+let rest_o2_consumption_l_s = 0.003;
+let swim_o2_consumption_l_s = 0.03;
 let lung_capacity_l = 6;
 let lung_residual_volume_l = 1.2;
 let breathe_rate_l_s = 3;
 let weights_mass_kg = 6;
+let ear_rupture_bar = 0.5;
+let ear_no_equalize_bar = 0.3;
+let ear_equalize_rate_bar_s = 0.1;
 
 let tank_o2_conc = 0.2095;
 let tank_contents_l = 2200;  // Before being compressed into the tank.
@@ -153,7 +156,7 @@ function update_simulation(elapsed_s) {
 
         // Metabolism.
         lung_o2_l -= elapsed_s * (
-            swimming ? swimming_o2_consumption_l_s : resting_o2_consumption_l_s);
+            swimming ? swim_o2_consumption_l_s : rest_o2_consumption_l_s);
 
         lung_o2_conc = lung_o2_l / lung_volume_l;
         blood_o2_sat = 0.8 + ((lung_o2_conc - 0.06) / (tank_o2_conc - 0.06)) * 0.2
@@ -186,8 +189,16 @@ function update_simulation(elapsed_s) {
         bcd_contents_l /= pressure_differential;
 
 
-        if (enter_pressed && !up_pressed  && !down_pressed) {
-            let diff = pressure_bar() - ear_bar;
+        // Equalizing is automatic on accent.
+        let equalizing = enter_pressed && !up_pressed  && !down_pressed
+                         || pressure_bar() < ear_bar;
+        if (equalizing) {
+            let diff_bar = pressure_bar() - ear_bar;
+            if (diff_bar < ear_no_equalize_bar) {
+                diff_bar = Math.min(
+                    diff_bar, ear_equalize_rate_bar_s * elapsed_s);
+                ear_bar += diff_bar;
+            }
         }
 
         // Game state changes:
@@ -195,12 +206,12 @@ function update_simulation(elapsed_s) {
             game_state = 'ASPHYXIATED';
         }
         if (lung_volume_l / lung_capacity_l > 1.1) {
-            game_state = 'EXPANSION_INJURY';
+            game_state = 'LUNG_EXPANSION_INJURY';
         }
         if (height_m < -35) {
-            game_state = 'COLLIDED_BOTTOM';
+            game_state = 'COLLIDED_WITH_CORAL';
         }
-        if (Math.abs(ear_bar - pressure_bar()) > 0.5) {
+        if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
             game_state = 'RUPTURED_EARDRUM';
         }
     }
@@ -217,7 +228,7 @@ function color_from_ratio(ratio) {
 }
 
 function dial(ratio, color_func) {
-    return '<td><div class=dial><div style="width: ' + (ratio * 100).toFixed(0) + '%; background-color: ' + color_func(ratio) + '"></div></div></td>';
+    return '<div class=dial><div style="width: ' + (ratio * 100).toFixed(0) + '%; background-color: ' + color_func(ratio) + '"></div></div>';
 }
 
 function update_view() {
@@ -227,14 +238,35 @@ function update_view() {
         diver.style['top'] = (-height_m / max_depth) * 100 + '%';
         diver.style['left'] = (distance_m + 3) * 10 + 'px';
 
-        blood_o2_dial_pc = (blood_o2_sat - 0.8) / 0.2 * 100;
+        blood_o2_status = null;
+        if (blood_o2_sat > 0.95) {
+            blood_o2_status = 'OK';
+        } else if (blood_o2_sat > 0.9) {
+            blood_o2_status = 'Short of breath';
+        } else if (blood_o2_sat > 0.85) {
+            blood_o2_status = 'Uncomfortable!';
+        } else if (blood_o2_sat > 0.8) {
+            blood_o2_status = 'AGONIZING!';
+        }
+        let ear_pain = Math.abs(ear_bar - pressure_bar());
+        let ear_status = null;
+        if (ear_pain < 0.1) {
+            ear_status = 'OK';
+        } else if (ear_pain < 0.2) {
+            ear_status = 'Pressure';
+        } else if (ear_pain < 0.3) {
+            ear_status = 'Discomfort';
+        } else if (ear_pain < 0.4) {
+            ear_status = 'Pain!';
+        } else if (ear_pain < 0.5) {
+            ear_status = 'AGONY!';
+        }
         info.innerHTML = [
             '<table>',
 
             '<tr>',
-            '<td>Blood O2 saturation:</td>',
-            '<td>' + (blood_o2_sat * 100).toFixed(1) + '%</td>',
-            dial((blood_o2_sat - 0.8) / 0.2, color_from_ratio),
+            '<td>Breathlessness:</td>',
+            '<td>' + blood_o2_status + '</td>',
             '</tr>',
 
             '<tr>',
@@ -244,8 +276,10 @@ function update_view() {
 
             '<tr>',
             '<td>Tank pressure gauge:</td>',
-            '<td>' + (tank_gauge()).toFixed(1) + ' bar</td>',
+            '<td>',
             dial(tank_gauge() / 220, color_from_ratio),
+            (tank_gauge()).toFixed(1) + ' bar',
+            '</td>',
             '</tr>',
 
             '<tr>',
@@ -260,8 +294,8 @@ function update_view() {
             '<tr>',
 
             '<tr>',
-            '<td>Ear - ambient pressure:</td>',
-            '<td>' + (ear_bar - pressure_bar()).toFixed(2) + ' bar</td>',
+            '<td>Ears:</td>',
+            '<td>' + ear_status + '</td>',
             '</tr>',
             '<tr>',
 

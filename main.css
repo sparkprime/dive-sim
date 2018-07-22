@@ -46,3 +46,7 @@ img#diver {
     position: absolute;
     height:10px;
 }
+
+#info {
+    padding: 16px 0;
+}
