@@ -1,0 +1,42 @@
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <title>The diving simulator game</title>
+    <script src="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="main.css" />
+</head>
+
+<body>
+    <div id=graphics>
+        <div class=sea>
+            <div id=text>
+                <table>
+                <tr><td>Breathe in/out:</td><td>↑ / ↓</td></tr>
+                <tr><td>Deflate/Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a>:</td><td>[ / ]</td></tr>
+                </table>
+                <div id=info>
+                </div>
+            </div>
+            <img id=diver src="diver.svg">
+        </div>
+        <div class=sea id=bottom>
+        </div>
+        <div class=seabed>
+        </div>
+    </div>
+</body>
+
+<script>
+start_simulation();
+</script>
+
+</html>
+
+<!--
+
+clear mask
+
+narcosis
+
+decompression sickness
+

@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+    background-color: #a8c6ff;  /* Sky */
+}
+.dial {
+    width: 64px;
+    height: 12px;
+    border: black;
+    border-style: solid;
+    border-width: 1px;
+}
+.dial div {
+    width: 50%;
+    height: 100%;
+    background: cyan;
+}
+
+#graphics {
+    width: 100%;
+    bottom: 0;
+    position: absolute;
+}
+.sea {
+    position: relative;
+    height: 690px;
+    background-color: #1969ff;
+}
+.sea#bottom {
+    height: 10px;
+}
+.seabed {
+    height: 40px;
+    background-color: #e6cfa3;
+}
+#text {
+    float: right;
+    background-color: white;
+    width: 400px;
+    margin: 32px;
+    right: 0;
+    padding: 16px;
+}
+
+img#diver {
+    z-index: 15;
+    position: absolute;
+    height:10px;
+}

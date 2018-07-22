@@ -1,72 +1,10 @@
-<html>
-<head>
-<meta charset='UTF-8'>
-<title>Title of the document</title>
-</head>
-
-<style>
-.dial {
-    width: 64px;
-    height: 12px;
-    border: black;
-    border-style: solid;
-    border-width: 1px;
-}
-.dial div {
-    width: 50%;
-    height: 100%;
-    background: cyan;
-}
-#sky {
-   width: 640px;
-   height: 80px;
-   background-color: #a8c6ff;
-}
-.sea {
-   width: 640px;
-   height: 500px;
-   background-color: #1969ff;
-}
-.sea#bottom {
-   height: 21px;
-}
-.seabed {
-   width: 640px;
-   height: 50px;
-   background-color: #e6cfa3;
-}
-img#diver {
-    position: relative;
-    width:64px;
-}
-</style>
-
-<body>
-<h1>The Diving Game</h1>
-<p>Diving is easy! (Except when it's hard.)
-<p>Press UP to breathe in, DOWN to breathe out.</p>
-<p>Press [ to dump <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a> and ] to inflate.</p>
-<div id=info>
-</div>
-<div class=sky>
-</div>
-<div class=sea>
-<img id=diver src="diver.svg">
-</div>
-<div class=sea id=bottom>
-</div>
-<div class=seabed>
-</div>
-</body>
-
-<script>
-
 let up_pressed = false;
 let down_pressed = false;
 let left_pressed = false;
 let right_pressed = false;
 let left_sq_pressed = false;
 let right_sq_pressed = false;
+let enter_pressed = false;
 document.onkeydown = function(e) {
     e = e || window.event;
     if (e.keyCode == 38) {
@@ -81,8 +19,10 @@ document.onkeydown = function(e) {
         left_sq_pressed = true;
     } else if (e.keyCode == 221) {
         right_sq_pressed = true;
+    } else if (e.keyCode == 13) {
+        enter_pressed = true;
     } else {
-        console.log(e.keyCode);
+        // console.log(e.keyCode);
     }
 }
 document.onkeyup = function(e) {
@@ -99,6 +39,8 @@ document.onkeyup = function(e) {
         left_sq_pressed = false;
     } else if (e.keyCode == 221) {
         right_sq_pressed = false;
+    } else if (e.keyCode == 13) {
+        enter_pressed = false;
     }
 }
 
@@ -112,11 +54,11 @@ let resting_o2_consumption_l_s = 0.003;
 let swimming_o2_consumption_l_s = 0.03;
 let lung_capacity_l = 6;
 let lung_residual_volume_l = 1.2;
-let breathe_rate_l_s = 0.333 * lung_capacity_l;
+let breathe_rate_l_s = 3;
 let weights_mass_kg = 6;
 
 let tank_o2_conc = 0.2095;
-let tank_contents_l = 2200;  // When fully pressurized
+let tank_contents_l = 2200;  // Before being compressed into the tank.
 let tank_volume_l = 10;  // At 1 ATM.
 let tank_mass_kg = 15;
 let tank_displacement_l = 17;
@@ -128,23 +70,25 @@ let bcd_fill_rate_l_s = 6;
 let bcd_dump_rate_l_s = 4;
 
 let game_state = 'RUNNING';
+let distance_m = 0;
 let lung_volume_l = 0.5 * lung_capacity_l;
+let ear_bar = 1.01325;
 let lung_o2_conc = 0.19;
 let bcd_contents_l = 9;
 let swimming = false;
 let height_m = 0;  // Negative means underwater.
 let vertical_velocity_m_s = 0;
 
-function pressure_atm() {
+function pressure_bar() {
     if (height_m >= 0) {
-        return 1;
+        return 1.01325;
     } else {
-        return 1 - 0.1 * height_m;
+        return 1.01325 - height_m / 10;
     }
 }
 
-function tank_atm() {
-    return tank_contents_l / tank_volume_l;
+function tank_gauge() {
+    return Math.max(0, tank_contents_l / tank_volume_l - pressure_bar());
 }
 
 function total_mass_kg() {
@@ -169,24 +113,36 @@ function update_simulation(elapsed_s) {
         } else if (right_sq_pressed && !left_sq_pressed) {
             // Inflate BCD via LPI.
             let inflation_l = bcd_fill_rate_l_s * elapsed_s;
+            inflation_l = Math.min(
+                inflation_l, tank_contents_l - pressure_bar() * tank_volume_l);
+            if (inflation_l < 0) {
+                // This can happen when the tank was emptied and then sunk.
+                inflation_l = 0;
+            }
             bcd_contents_l += inflation_l;
-            tank_contents_l -= inflation_l * pressure_atm();
+            tank_contents_l -= inflation_l * pressure_bar();
         }
         if (bcd_contents_l > bcd_max_contents_l) {
             // Safety valve opens.
             bcd_contents_l = bcd_max_contents_l;
         }
 
-        if (up_pressed && !down_pressed) {
+        if (up_pressed && !down_pressed && !enter_pressed) {
             // Breathe in from tank.
             let inhaled_l = elapsed_s * breathe_rate_l_s;
             if (lung_volume_l >= lung_capacity_l) inhaled_l = 0;
+            inhaled_l = Math.min(
+                inhaled_l, tank_contents_l - pressure_bar() * tank_volume_l);
+            if (inhaled_l < 0) {
+                // This can happen when the tank was emptied and then sunk.
+                inhaled_l = 0;
+            }
             let old_o2 = lung_volume_l * lung_o2_conc;
             let new_o2 = inhaled_l * tank_o2_conc;
             lung_volume_l += inhaled_l;
-            tank_contents_l -= inhaled_l * pressure_atm();
+            tank_contents_l -= inhaled_l * pressure_bar();
             lung_o2_conc = (old_o2 + new_o2) / lung_volume_l;
-        } else if (down_pressed && !up_pressed) {
+        } else if (down_pressed && !up_pressed && !enter_pressed) {
             // Breathe out (bubbles).
             lung_volume_l -= elapsed_s * breathe_rate_l_s;
             if (lung_volume_l < lung_residual_volume_l) lung_volume_l = lung_residual_volume_l;
@@ -203,7 +159,7 @@ function update_simulation(elapsed_s) {
         blood_o2_sat = 0.8 + ((lung_o2_conc - 0.06) / (tank_o2_conc - 0.06)) * 0.2
 
         // Bouyancy
-        let old_pressure_atm = pressure_atm();
+        let old_pressure_bar = pressure_bar();
         let vertical_acceleration_m_s_s = bouyancy_n() / total_mass_kg();
         vertical_velocity_m_s += vertical_acceleration_m_s_s * elapsed_s;
         if (height_m >= 0) {
@@ -225,12 +181,14 @@ function update_simulation(elapsed_s) {
         height_m += vertical_velocity_m_s * elapsed_s;
 
         // De/compression of air spaces.
-        let pressure_differential = pressure_atm() / old_pressure_atm;
+        let pressure_differential = pressure_bar() / old_pressure_bar;
         lung_volume_l /= pressure_differential;
         bcd_contents_l /= pressure_differential;
 
-        let diver = document.getElementById('diver');
-        diver.style['bottom'] = (height_m / max_depth) * 100 + '%';
+
+        if (enter_pressed && !up_pressed  && !down_pressed) {
+            let diff = pressure_bar() - ear_bar;
+        }
 
         // Game state changes:
         if (blood_o2_sat <= 0.8) {
@@ -242,22 +200,33 @@ function update_simulation(elapsed_s) {
         if (height_m < -35) {
             game_state = 'COLLIDED_BOTTOM';
         }
+        if (Math.abs(ear_bar - pressure_bar()) > 0.5) {
+            game_state = 'RUPTURED_EARDRUM';
+        }
     }
 }
 
-function color_from_pc(pc) {
-    if (pc < 25) {
+function color_from_ratio(ratio) {
+    if (ratio < .25) {
         return 'red';
-    } else if (pc < 50) {
+    } else if (ratio < .50) {
         return 'yellow';
     } else {
         return 'green';
     }
 }
 
+function dial(ratio, color_func) {
+    return '<td><div class=dial><div style="width: ' + (ratio * 100).toFixed(0) + '%; background-color: ' + color_func(ratio) + '"></div></div></td>';
+}
+
 function update_view() {
     let info = document.getElementById('info');
     if (game_state == 'RUNNING') {
+        let diver = document.getElementById('diver');
+        diver.style['top'] = (-height_m / max_depth) * 100 + '%';
+        diver.style['left'] = (distance_m + 3) * 10 + 'px';
+
         blood_o2_dial_pc = (blood_o2_sat - 0.8) / 0.2 * 100;
         info.innerHTML = [
             '<table>',
@@ -265,7 +234,7 @@ function update_view() {
             '<tr>',
             '<td>Blood O2 saturation:</td>',
             '<td>' + (blood_o2_sat * 100).toFixed(1) + '%</td>',
-            '<td><div class=dial><div style="width: ' + (blood_o2_dial_pc).toFixed(0) + '%; background-color: ' + color_from_pc(blood_o2_dial_pc) + '"></div></div></td>',
+            dial((blood_o2_sat - 0.8) / 0.2, color_from_ratio),
             '</tr>',
 
             '<tr>',
@@ -274,8 +243,9 @@ function update_view() {
             '</tr>',
 
             '<tr>',
-            '<td>Tank pressure:</td>',
-            '<td>' + (tank_atm()).toFixed(1) + ' atm</td>',
+            '<td>Tank pressure gauge:</td>',
+            '<td>' + (tank_gauge()).toFixed(1) + ' bar</td>',
+            dial(tank_gauge() / 220, color_from_ratio),
             '</tr>',
 
             '<tr>',
@@ -284,14 +254,14 @@ function update_view() {
             '</tr>',
 
             '<tr>',
-            '<td>Height:</td>',
-            '<td>' + (height_m).toFixed(2) + ' m</td>',
+            '<td>Depth:</td>',
+            '<td>' + (-height_m).toFixed(2) + ' m</td>',
             '</tr>',
             '<tr>',
 
             '<tr>',
-            '<td>Vertical velocity:</td>',
-            '<td>' + (vertical_velocity_m_s).toFixed(2) + ' m / s</td>',
+            '<td>Ear - ambient pressure:</td>',
+            '<td>' + (ear_bar - pressure_bar()).toFixed(2) + ' bar</td>',
             '</tr>',
             '<tr>',
 
@@ -307,21 +277,7 @@ function tick() {
     update_view();
 }
 
-setInterval(tick, 10); // Time in milliseconds
-// tick();
+function start_simulation() {
+    setInterval(tick, 10); // Time in milliseconds
+}
 
-</script>
-
-</html>
-
-<!--
-
-pressure in ears
-pressure in sinus
-equalizing
-
-clear mask
-
-narcosis
-
-decompression sickness
