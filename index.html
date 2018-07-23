@@ -10,15 +10,37 @@
     <div id=graphics>
         <div class=sea>
             <div id=text>
+            <!--
                 <table>
                 <tr><td>Breathe in/out:</td><td>↑ / ↓</td></tr>
                 <tr><td>Deflate/Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a>:</td><td>[ / ]</td></tr>
                 <tr><td>Equalize:</td><td>Enter</td></tr>
                 </table>
+            -->
                 <div id=info>
                 </div>
             </div>
-            <img id=diver src="diver.svg">
+            <div id=diver>
+                <img id=diver-body src="diver.svg">
+            </div>
+            <img id=dive-boat src="dive-boat.svg">
+            <div id=gauge-assy>
+                <img id=gauge src="gauge.svg">
+                <img id=gauge-needle src="gauge-needle.svg">
+                <p class=gauge-text-small id=dive-time>34</p>
+                <p class=gauge-text-med id=depth>29.2</p>
+                <p class=gauge-text-med id=max-depth>34.6</p>
+                <p class=gauge-text-big id=no-deco-time>09</p>
+            </div>
+            <div id=lungs-assy>
+                <img class=lung src="chest.svg">
+                <img class="lung lung-background lung-left" src="left-lung.svg">
+                <img class="lung lung-background lung-right" src="right-lung.svg">
+                <img class="lung lung-foreground lung-left" src="left-lung.svg">
+                <img class="lung lung-foreground lung-right" src="right-lung.svg">
+                <img class="lung" id=expansion-injury-warning src="expansion-injury-warning.svg">
+                <img class="lung" id=breathless-warning src="breathless-warning.svg">
+            </div>
         </div>
         <div class=sea id=bottom>
         </div>
@@ -35,9 +57,26 @@ start_simulation();
 
 <!--
 
-clear mask
+TODO list
+---------
 
-narcosis
+Basic necessities:
+- use warning symbols for breathlessness / ears
+- use lung graphic expanding / contracting for lung expansion, and show in red for expansion pain
+- for depth and pressure use real gauges
+- for BCD inflation use some sort of graphic too
+- cannot equalize if not enough air in lungs
+- model throat and other dead spaces to encourage deep steady breathing
+- Graphics for each kind of "game over"
 
-decompression sickness
+Other features:
+- clear mask
+- decompression sickness
+- swimming through course up / down
 
+Advanced:
+- dive when over / underweighed
+- narcosis
+- swimming in current
+
+-->

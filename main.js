@@ -51,7 +51,7 @@ let max_depth = 35;
 let body_mass_kg = 80;
 let body_displacement_l = 77;
 let rest_o2_consumption_l_s = 0.003;
-let swim_o2_consumption_l_s = 0.03;
+let swim_o2_consumption_l_s = 0.02;
 let lung_capacity_l = 6;
 let lung_residual_volume_l = 1.2;
 let breathe_rate_l_s = 3;
@@ -59,6 +59,7 @@ let weights_mass_kg = 6;
 let ear_rupture_bar = 0.5;
 let ear_no_equalize_bar = 0.3;
 let ear_equalize_rate_bar_s = 0.1;
+let swim_speed_m_s = 0.8;
 
 let tank_o2_conc = 0.2095;
 let tank_contents_l = 2200;  // Before being compressed into the tank.
@@ -74,13 +75,15 @@ let bcd_dump_rate_l_s = 4;
 
 let game_state = 'RUNNING';
 let distance_m = 0;
+let direction = 1;  // Right, or -1 to go left.
 let lung_volume_l = 0.5 * lung_capacity_l;
 let ear_bar = 1.01325;
 let lung_o2_conc = 0.19;
 let bcd_contents_l = 9;
-let swimming = false;
 let height_m = 0;  // Negative means underwater.
+let min_height_m = 0;  // For max depth this dive.
 let vertical_velocity_m_s = 0;
+let dive_time_s = 0;
 
 function pressure_bar() {
     if (height_m >= 0) {
@@ -155,6 +158,7 @@ function update_simulation(elapsed_s) {
         let lung_o2_l = lung_o2_conc * lung_volume_l;
 
         // Metabolism.
+        let swimming = left_pressed || right_pressed;
         lung_o2_l -= elapsed_s * (
             swimming ? swim_o2_consumption_l_s : rest_o2_consumption_l_s);
 
@@ -173,15 +177,16 @@ function update_simulation(elapsed_s) {
             }
         }
         // Drag.
-        vertical_velocity_m_s = (
-            vertical_velocity_m_s
-            + 0.01 * Math.sign(-vertical_velocity_m_s) * vertical_velocity_m_s * vertical_velocity_m_s);
-
-        // Terminal velocity.
-        vertical_velocity_m_s = Math.max(-2, Math.min(2, vertical_velocity_m_s));
+        vertical_velocity_m_s = vertical_velocity_m_s + (
+            0.01 * Math.sign(-vertical_velocity_m_s) * vertical_velocity_m_s
+            * vertical_velocity_m_s);
 
         // Integrate motion.
         height_m += vertical_velocity_m_s * elapsed_s;
+
+        if (height_m < min_height_m) {
+            min_height_m = height_m;
+        }
 
         // De/compression of air spaces.
         let pressure_differential = pressure_bar() / old_pressure_bar;
@@ -201,6 +206,14 @@ function update_simulation(elapsed_s) {
             }
         }
 
+        if (left_pressed && !right_pressed) {
+            direction = -1;
+            distance_m -= swim_speed_m_s * elapsed_s;
+        } else if (right_pressed && !left_pressed) {
+            direction = 1;
+            distance_m += swim_speed_m_s * elapsed_s;
+        }
+
         // Game state changes:
         if (blood_o2_sat <= 0.8) {
             game_state = 'ASPHYXIATED';
@@ -214,6 +227,8 @@ function update_simulation(elapsed_s) {
         if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
             game_state = 'RUPTURED_EARDRUM';
         }
+
+        dive_time_s += elapsed_s;
     }
 }
 
@@ -227,27 +242,60 @@ function color_from_ratio(ratio) {
     }
 }
 
-function dial(ratio, color_func) {
-    return '<div class=dial><div style="width: ' + (ratio * 100).toFixed(0) + '%; background-color: ' + color_func(ratio) + '"></div></div>';
+function format_number(number, digits, dec) {
+    let len = digits + dec + (dec > 0 ? 1 : 0);
+    return ('0'.repeat(digits) + number.toFixed(dec)).substr(-len, len);
 }
 
 function update_view() {
+
     let info = document.getElementById('info');
     if (game_state == 'RUNNING') {
+        let gauge_needle = document.getElementById('gauge-needle');
+        gauge_needle.style['transform'] = 'rotate(' + (tank_gauge() / 50 * 30) + 'deg)';
+
         let diver = document.getElementById('diver');
         diver.style['top'] = (-height_m / max_depth) * 100 + '%';
-        diver.style['left'] = (distance_m + 3) * 10 + 'px';
+        diver.style['left'] = (distance_m + 20) * 10 + 'px';
+        if (direction > 0) {
+            diver.style['transform'] = 'scale(1, 1)';
+        } else {
+            diver.style['transform'] = 'scale(-1, 1)';
+        }
 
         blood_o2_status = null;
         if (blood_o2_sat > 0.95) {
-            blood_o2_status = 'OK';
+            blood_o2_status = '0deg';
+        } else if (blood_o2_sat > 0.925) {
+            blood_o2_status = '-20deg';
         } else if (blood_o2_sat > 0.9) {
-            blood_o2_status = 'Short of breath';
+            blood_o2_status = '-40deg';
+        } else if (blood_o2_sat > 0.875) {
+            blood_o2_status = '-60deg';
         } else if (blood_o2_sat > 0.85) {
-            blood_o2_status = 'Uncomfortable!';
+            blood_o2_status = '-80deg';
         } else if (blood_o2_sat > 0.8) {
-            blood_o2_status = 'AGONIZING!';
+            blood_o2_status = '-110deg';
         }
+
+        document.getElementById('breathless-warning').style['visibility'] =
+            blood_o2_sat < 0.825 && (dive_time_s * 3) % 1 > 0.7 ? 'visible' : 'hidden';
+
+        let lung_scale = 0.5 + 0.5 * (lung_volume_l / lung_capacity_l);
+        document.getElementById('expansion-injury-warning').style['visibility'] =
+            lung_scale > 1.015 && (dive_time_s * 3) % 1 > 0.7 ? 'visible' : 'hidden';
+        let lungs = document.getElementsByClassName('lung-foreground');
+        for (let lung of lungs) {
+            lung.style['transform'] = 'scale(' + lung_scale + ', ' + lung_scale + ')';
+            lung.style['filter'] = 'hue-rotate(' + blood_o2_status + ')';
+        }
+
+        document.getElementById('depth').innerHTML = format_number(-height_m, 2, 1);
+        document.getElementById('max-depth').innerHTML = format_number(-min_height_m, 2, 1);
+        document.getElementById('dive-time').innerHTML = format_number(dive_time_s / 60, 2, 0);
+        document.getElementById('no-deco-time').innerHTML = format_number(99, 2, 0);
+
+
         let ear_pain = Math.abs(ear_bar - pressure_bar());
         let ear_status = null;
         if (ear_pain < 0.1) {
@@ -265,33 +313,9 @@ function update_view() {
             '<table>',
 
             '<tr>',
-            '<td>Breathlessness:</td>',
-            '<td>' + blood_o2_status + '</td>',
-            '</tr>',
-
-            '<tr>',
-            '<td>Lung expansion:</td>',
-            '<td>' + (lung_volume_l / lung_capacity_l * 100).toFixed(0) + '%</td>',
-            '</tr>',
-
-            '<tr>',
-            '<td>Tank pressure gauge:</td>',
-            '<td>',
-            dial(tank_gauge() / 220, color_from_ratio),
-            (tank_gauge()).toFixed(1) + ' bar',
-            '</td>',
-            '</tr>',
-
-            '<tr>',
             '<td>BCD inflation:</td>',
             '<td>' + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0) + '%</td>',
             '</tr>',
-
-            '<tr>',
-            '<td>Depth:</td>',
-            '<td>' + (-height_m).toFixed(2) + ' m</td>',
-            '</tr>',
-            '<tr>',
 
             '<tr>',
             '<td>Ears:</td>',

@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background-color: #a8c6ff;  /* Sky */
+    background-color: #d2e9ff;  /* Sky */
 }
 .dial {
     width: 64px;
@@ -23,7 +23,7 @@ body {
 .sea {
     position: relative;
     height: 690px;
-    background-color: #1969ff;
+    background-color: #6281bb;
 }
 .sea#bottom {
     height: 10px;
@@ -41,12 +41,126 @@ body {
     padding: 16px;
 }
 
-img#diver {
+div#diver {
     z-index: 15;
     position: absolute;
-    height:10px;
+    height: 10px;
 }
+
+img#diver-body {
+    position: absolute;
+    height: 100%;
+}
+
+img#dive-boat {
+    left: 10px;
+    z-index: 10;
+    position: absolute;
+    height: 110px;
+    top: -90px;
+}
+
 
 #info {
     padding: 16px 0;
+}
+
+
+#gauge-assy {
+    overflow: hidden;
+    height: 444px;
+    width: 201px;
+    right: 10px;
+    z-index: 10;
+    position: absolute;
+}
+
+img#gauge {
+    height: 100%;
+    position: absolute;
+}
+
+img#gauge-needle {
+    height: 200px;
+    position: absolute;
+    transform: rotate(0deg);
+    bottom: 42px;
+}
+
+.gauge-text-big, .gauge-text-small, .gauge-text-med {
+    position: absolute;
+    font-family: monospace;
+    font-weight: bold;
+    color: #002828;
+}
+
+.gauge-text-small {
+    font-size: 15px;
+}
+
+.gauge-text-med {
+    font-size: 18px;
+}
+
+.gauge-text-big {
+    font-size: 30px;
+}
+
+#dive-time {
+    left: 45px;
+    top: 25px;
+}
+
+#depth {
+    left: 105px;
+    top: 20px;
+}
+
+#max-depth {
+    left: 30px;
+    top: 77px;
+}
+
+#no-deco-time {
+    left: 118px;
+    top: 55px;
+}
+
+
+#lungs-assy {
+    overflow: hidden;
+    top: 200px;
+    right: 280px;
+    z-index: 10;
+    position: absolute;
+    height: 200px;
+    width: 200px;
+}
+
+img#trachea {
+    height: 200px;
+    position: absolute;
+}
+
+.lung {
+    height: 200px;
+    position: absolute;
+}
+
+.lung-background {
+    opacity: 0.8;
+    filter: saturate(0.5) blur(3px);
+}
+
+.lung-foreground {
+    /* filter: hue-rotate(-110deg); */
+}
+
+.lung-left {
+    transform-origin: 84px 30px;
+}
+
+
+.lung-right {
+    transform-origin: 110px 30px;
 }
