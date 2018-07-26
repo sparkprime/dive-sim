@@ -13,6 +13,7 @@ var rest_o2_consumption_l_s = 0.01;
 var swim_o2_consumption_l_s = 0.025;
 var lung_capacity_l = 6;
 var lung_residual_volume_l = 2;
+var lung_volume_to_equalize_l = 2.5;
 var breathe_rate_l_s = 3;
 var weights_mass_kg = 6;
 var ear_rupture_bar = 0.5;
@@ -46,12 +47,16 @@ var height_m;
 var min_height_m;
 var vertical_velocity_m_s;
 var dive_time_s;
+var equalizing;
+var blood_o2_sat;
+var equalize_pressure_too_great;
+var equalize_not_enough_air;
 
 function set_game_state(v) {
     game_state = v;
+    splash.style['visibility'] = v == 'SPLASH' ? 'visible' : 'hidden';
     paused.style['visibility'] = v == 'PAUSED' ? 'visible' : 'hidden';
-    document.getElementById('game-over').style['visibility'] =
-        v == 'GAME_OVER' ? 'visible' : 'hidden';
+    game_over.style['visibility'] = v == 'GAME_OVER' ? 'visible' : 'hidden';
 }
 
 function toggle_pause() {
@@ -62,8 +67,8 @@ function toggle_pause() {
     }
 }
 
-function game_over(msg) {
-    document.getElementById('game-over-msg').innerHTML = msg;
+function do_game_over(msg) {
+    game_over_msg.innerHTML = msg;
     set_game_state('GAME_OVER');
 }
 
@@ -79,6 +84,10 @@ function reset_game() {
     min_height_m = 0;  // For max depth this dive.
     vertical_velocity_m_s = 0;
     dive_time_s = 0;
+    equalizing = false;
+    equalize_pressure_too_great = false;
+    equalize_not_enough_air = false;
+    blood_o2_sat = 1;
     clear_bubbles();
     set_game_state('RUNNING');
 }
@@ -170,7 +179,7 @@ function make_bubble(elapsed_s, x, y) {
 function diver_bubble(elapsed_s) {
     make_bubble(
         elapsed_s,
-        distance_m + direction * (0.8 + 0.2 * Math.random()),
+        distance_m + direction * (0.6 + 0.2 * Math.random()),
         height_m - 0.2 + 0.1 * Math.random());
 }
 
@@ -216,7 +225,6 @@ function pan(x, y) {
     y += document.body.clientHeight / 2;
     if (x < 0) x = 0;
     x = Math.min(x, 100 * zoom * 1000 - document.body.clientWidth);
-    console.log(x);
     y = Math.max(y, -40 * zoom * 1000 + document.body.clientHeight);
     world.style.transform =
         'translate(' + (-x) + 'px, ' + y + 'px) '
@@ -386,16 +394,30 @@ function update_simulation(elapsed_s) {
     bcd_contents_l /= pressure_differential;
 
 
-    // Equalizing is automatic on accent.
-    let equalizing = enter_pressed && !up_pressed  && !down_pressed
-                     || pressure_bar() < ear_bar;
+    // Note: if you attempt to breathe and equalize at the same time,
+    // equalizing 'wins' -- i.e., you equalize, but you don't breathe.
+    equalizing = enter_pressed;
+    equalize_pressure_too_great = false;
+    equalize_not_enough_air = false;
     if (equalizing) {
         let diff_bar = pressure_bar() - ear_bar;
-        if (diff_bar < ear_no_equalize_bar) {
+        if (lung_volume_l < lung_volume_to_equalize_l) {
+            equalize_not_enough_air = true;
+        } else if (diff_bar < ear_no_equalize_bar) {
             diff_bar = Math.min(
                 diff_bar, ear_equalize_rate_bar_s * elapsed_s);
             ear_bar += diff_bar;
+        } else {
+            equalize_pressure_too_great = true;
         }
+    }
+
+    // Equalizing is automatic on accent.
+    if (pressure_bar() < ear_bar) {
+        let diff_bar = pressure_bar() - ear_bar;
+        diff_bar = Math.min(
+            diff_bar, ear_equalize_rate_bar_s * elapsed_s);
+        ear_bar += diff_bar;
     }
 
     if (left_pressed && !right_pressed) {
@@ -411,14 +433,14 @@ function update_simulation(elapsed_s) {
     // Game state changes:
     if (!god_mode) {
         if (blood_o2_sat <= 0.8) {
-            game_over(
+            do_game_over(
                 '<p>You forgot to breathe.</p>'
-                + '<p>Explicit breathing control is necessary for good '
+                + '<p>Controlled continuous breathing is essential for good '
                 + 'bouyancy control, as well as basic survival!</p>'
             );
         }
         if (lung_volume_l / lung_capacity_l > 1.1) {
-            game_over(
+            do_game_over(
                 '<p>You died of a lung expansion injury.</p>'
                 + '<p>When ascending, the change in environmental pressure '
                 + 'causes your lungs to inflate like a balloon.  You must '
@@ -427,7 +449,7 @@ function update_simulation(elapsed_s) {
             );
         }
         if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
-            game_over(
+            do_game_over(
                 '<p>You suffered a ruptured ear drum.</p>'
                 + '<p>When descending, the air space in your inner ear must be '
                 + 'continually equalized ([enter] key) to the increasing '
@@ -438,7 +460,7 @@ function update_simulation(elapsed_s) {
         }
         if (inside_topo(distance_m, height_m)
             || too_close(distance_m, height_m)) {
-            game_over(
+            do_game_over(
                 '<p>You collided with the coral!</p>'
                 + '<p>Coral takes years to grow but is very delicate.  '
                 + 'Divers should never touch it, even when passing through '
@@ -457,7 +479,6 @@ function format_number(number, digits, dec) {
 
 function update_view() {
 
-    let gauge_needle = document.getElementById('gauge-needle');
     let tank_gauge = Math.max(
         0, tank_contents_l / tank_volume_l - pressure_bar());
     gauge_needle.style['transform'] =
@@ -485,7 +506,6 @@ function update_view() {
         blood_o2_status = '-110deg';
     }
 
-    let breathless_warning = document.getElementById('breathless-warning');
     if (blood_o2_sat < 0.825 && (dive_time_s * 3) % 1 > 0.7) {
         breathless_warning.style['visibility'] = 'visible';
     } else {
@@ -493,59 +513,59 @@ function update_view() {
     }
 
     let lung_scale = 0.5 + 0.5 * (lung_volume_l / lung_capacity_l);
-    let expansion_warning = document.getElementById('expansion-warning');
     if (lung_scale > 1.015 && (dive_time_s * 3) % 1 > 0.7) {
         expansion_warning.style['visibility'] = 'visible';
     } else {
         expansion_warning.style['visibility'] = 'hidden';
     }
-    let lungs = document.getElementsByClassName('lung-foreground');
+    let lungs = document.getElementsByClassName('lung_foreground');
     for (let lung of lungs) {
         lung.style['transform'] =
             'scale(' + lung_scale + ', ' + lung_scale + ')';
         lung.style['filter'] = 'hue-rotate(' + blood_o2_status + ')';
     }
 
-    document.getElementById('depth').innerHTML =
-        format_number(-height_m, 2, 1);
-    document.getElementById('max-depth').innerHTML =
-        format_number(-min_height_m, 2, 1);
-    document.getElementById('dive-time').innerHTML =
-        format_number(dive_time_s / 60, 2, 0);
-    document.getElementById('no-deco-time').innerHTML =
-        format_number(99, 2, 0);
+    depth.innerHTML = format_number(-height_m, 2, 1);
+    max_depth.innerHTML = format_number(-min_height_m, 2, 1);
+    dive_time.innerHTML = format_number(dive_time_s / 60, 2, 0);
+    no_deco_time.innerHTML = format_number(99, 2, 0);
 
-    let ear_pain = Math.abs(ear_bar - pressure_bar());
-    let ear_status = null;
-    if (ear_pain < 0.1) {
-        ear_status = 'OK';
-    } else if (ear_pain < 0.2) {
-        ear_status = 'Pressure';
-    } else if (ear_pain < 0.3) {
-        ear_status = 'Discomfort';
-    } else if (ear_pain < 0.4) {
-        ear_status = 'Pain!';
-    } else if (ear_pain < 0.5) {
-        ear_status = 'AGONY!';
+    let ear_pain_qty = Math.abs(ear_bar - pressure_bar());
+    ears_pressure.style.visibility = 'hidden';
+    ears_uncomfortable.style.visibility = 'hidden';
+    ears_pain.style.visibility = 'hidden';
+    ears_warning.style.visibility = 'hidden';
+    equalize_attempt.style.visibility = 'hidden';
+    equalize_failure.style.visibility = 'hidden';
+    if (ear_pain_qty < 0.1) {
+        // Nothing to do.
+    } else if (ear_pain_qty < 0.2) {
+        ears_pressure.style.visibility = 'visible';
+    } else if (ear_pain_qty < 0.3) {
+        ears_uncomfortable.style.visibility = 'visible';
+    } else if (ear_pain_qty < 0.4) {
+        ears_pain.style.visibility = 'visible';
+    } else if (ear_pain_qty < 0.5) {
+        ears_pain.style.visibility = 'visible';
+        if ((dive_time_s * 3) % 1 > 0.7) {
+            ears_warning.style['visibility'] = 'visible';
+        } else {
+            ears_warning.style['visibility'] = 'hidden';
+        }
     }
-    info.innerHTML = [
-        '<table>',
+    if (equalizing) {
+        equalize_attempt.style.visibility = 'visible';
+        if (equalize_pressure_too_great) {
+            equalize_failure.style.visibility = 'visible';
+        }
+        if (equalize_not_enough_air) {
+            equalize_failure.style.visibility = 'visible';
+        }
+    }
 
-        '<tr>',
-        '<td>BCD inflation:</td>',
-        '<td>'
-        + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0)
-        + '%</td>',
-        '</tr>',
-
-        '<tr>',
-        '<td>Ears:</td>',
-        '<td>' + ear_status + '</td>',
-        '</tr>',
-        '<tr>',
-
-        '</table>',
-    ].join('');
+    text.innerHTML =
+        'BCD inflation: '
+        + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0) + '%';
 }
 
 function tick() {

@@ -8,9 +8,9 @@
 
 <body>
     <div id=pane>
-        <div id=game-over class=dialog>
+        <div id=game_over class=dialog>
             <h1>Game over!</h1>
-            <p id=game-over-msg>You forgot to breathe.</p>
+            <p id=game_over_msg>You forgot to breathe.</p>
             <div>
                 <button onclick='reset_game()'>Play again</button>
             </div>
@@ -21,22 +21,37 @@
                 <button onclick=toggle_pause()>Unpause</button>
             </div>
         </div>
-        <div id=gauge-assy>
-            <img id=gauge src="gauge.svg">
-            <img id=gauge-needle src="gauge-needle.svg">
-            <p class=gauge-text-small id=dive-time>34</p>
-            <p class=gauge-text-med id=depth>29.2</p>
-            <p class=gauge-text-med id=max-depth>34.6</p>
-            <p class=gauge-text-big id=no-deco-time>09</p>
+        <div id=splash class=dialog>
+            <h1>Diving!</h1>
+            <div>
+                <button onclick=set_game_state('RUNNING')>Begin</button>
+            </div>
         </div>
-        <div id=lungs-assy>
-            <img class=lung src="chest.svg">
-            <img class="lung lung-background lung-left" src="left-lung.svg">
-            <img class="lung lung-background lung-right" src="right-lung.svg">
-            <img class="lung lung-foreground lung-left" src="left-lung.svg">
-            <img class="lung lung-foreground lung-right" src="right-lung.svg">
-            <img class="lung" id=expansion-warning src="expansion-injury-warning.svg">
-            <img class="lung" id=breathless-warning src="breathless-warning.svg">
+        <div id=gauge_assy>
+            <img id=gauge src="gauge.svg">
+            <img id=gauge_needle src="gauge-needle.svg">
+            <p class=gauge_text_small id=dive_time>34</p>
+            <p class=gauge_text_med id=depth>29.2</p>
+            <p class=gauge_text_med id=max_depth>34.6</p>
+            <p class=gauge_text_big id=no_deco_time>09</p>
+        </div>
+        <div id=lungs_assy>
+            <img class=fill src="chest.svg">
+            <img class="fill lung_background lung_left" src="left-lung.svg">
+            <img class="fill lung_background lung_right" src="right-lung.svg">
+            <img class="fill lung_foreground lung_left" src="left-lung.svg">
+            <img class="fill lung_foreground lung_right" src="right-lung.svg">
+            <img class="fill" id=expansion_warning src="expansion-injury-warning.svg">
+            <img class="fill" id=breathless_warning src="breathless-warning.svg">
+        </div>
+        <div id=ears_assy>
+            <img class=fill id=ears src="ears.svg">
+            <img class=fill id=ears_pressure src="ears-pressure.svg">
+            <img class=fill id=ears_uncomfortable src="ears-uncomfortable.svg">
+            <img class=fill id=ears_pain src="ears-pain.svg">
+            <img class=fill id=ears_warning src="ears-warning.svg">
+            <img class=fill id=equalize_attempt src="equalize-attempt.svg">
+            <img class=fill id=equalize_failure src="equalize-failure.svg">
         </div>
         <div id=text>
             <!--
@@ -46,21 +61,21 @@
             <tr><td>Equalize:</td><td>Enter</td></tr>
             </table>
             -->
-            <div id=info>
-            </div>
         </div>
         <div id=world>
             <object id=topo onload='init()' data="topo.svg"></object>
             <div id=diver>
-                <img id=diver-body src="diver.svg">
+                <img id=diver_body src="diver.svg">
             </div>
-            <img id=dive-boat src="dive-boat.svg">
+            <img id=dive_boat src="dive-boat.svg">
         </div>
     </div>
 </body>
 
 <script>
+// These just fix the GUI while we're waiting for the topo to load.
 reset_game();
+set_game_state('SPLASH');
 tick();
 </script>
 
@@ -71,27 +86,11 @@ tick();
 TODO list
 ---------
 
-- ears
-  - feeling pressure (white arrow pointing against wall in ear)
-  - feeling uncofortable (put yellow warning over wall)
-  - feeling pain (put red warning over wall)
-  - feeling agony (put flashing red warning and make arrow red)
-  - attept to equalize
-    - arrow coming from lungs to inner ear
-  - failure to equalize due to not enough air in lungs
-    - cross over arrow
-  - failure to equalize due to already too much difference in pressure
-    - put wall 
-  - success of equalizing 
-
 pick up treasure
 
 Basic necessities:
-- use warning symbols for ears
-- for BCD inflation use some sort of graphic too
-- cannot equalize if not enough air in lungs
+- intro window
 - model throat and other dead spaces to encourage deep steady breathing
-- Graphics for each kind of "game over"
 
 Other features:
 - clear mask

@@ -6,15 +6,19 @@ body {
 #text {
     z-index: 15;
     position: absolute;
-    background-color: white;
-    width: 200px;
-    margin: 32px;
-    right: 220px;
+    background-color: #c4d1dc;
     bottom: 0;
-    padding: 16px;
-}
-#info {
-    padding: 16px 0;
+    margin: 8px 16px;
+    width: 180px;
+    left: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-align: center;
+    border-style: solid;
+    box-sizing: border-box;
+    font-size: 14px;
 }
 
 .dialog {
@@ -77,11 +81,11 @@ div#diver {
     z-index: 15;
     position: absolute;
 }
-img#diver-body {
+img#diver_body {
     width: 1750px;
 }
 
-img#dive-boat {
+img#dive_boat {
     top: -3700px;
     left: 4400px;
     z-index: 10;
@@ -96,9 +100,9 @@ img.bubble {
 
 
 
-#gauge-assy {
+#gauge_assy {
     overflow: hidden;
-    height: 444px;
+    height: 458px;
     width: 201px;
     left: 16px;
     bottom: 0;
@@ -107,37 +111,37 @@ img.bubble {
 }
 
 img#gauge {
-    height: 100%;
+    width: 100%;
     position: absolute;
 }
 
-img#gauge-needle {
+img#gauge_needle {
     height: 200px;
     position: absolute;
     transform: rotate(0deg);
-    bottom: 42px;
+    top: 202px;
 }
 
-.gauge-text-big, .gauge-text-small, .gauge-text-med {
+.gauge_text_big, .gauge_text_small, .gauge_text_med {
     position: absolute;
     font-family: monospace;
     font-weight: bold;
     color: #002828;
 }
 
-.gauge-text-small {
+.gauge_text_small {
     font-size: 15px;
 }
 
-.gauge-text-med {
+.gauge_text_med {
     font-size: 18px;
 }
 
-.gauge-text-big {
+.gauge_text_big {
     font-size: 30px;
 }
 
-#dive-time {
+#dive_time {
     left: 45px;
     top: 25px;
 }
@@ -147,18 +151,23 @@ img#gauge-needle {
     top: 20px;
 }
 
-#max-depth {
+#max_depth {
     left: 30px;
     top: 77px;
 }
 
-#no-deco-time {
+#no_deco_time {
     left: 118px;
     top: 55px;
 }
 
+img.fill {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
 
-#lungs-assy {
+#lungs_assy {
     overflow: hidden;
     bottom: 16px;
     right: 16px;
@@ -168,30 +177,28 @@ img#gauge-needle {
     width: 200px;
 }
 
-img#trachea {
-    height: 200px;
-    position: absolute;
-}
-
-.lung {
-    height: 200px;
-    position: absolute;
-}
-
-.lung-background {
+.lung_background {
     opacity: 0.8;
     filter: saturate(0.5) blur(3px);
 }
 
-.lung-foreground {
+.lung_foreground {
     /* filter: hue-rotate(-110deg); */
 }
 
-.lung-left {
+.lung_left {
     transform-origin: 84px 30px;
 }
 
-
-.lung-right {
+.lung_right {
     transform-origin: 110px 30px;
+}
+
+#ears_assy {
+    bottom: 226px;
+    right: 16px;
+    z-index: 10;
+    position: absolute;
+    width: 200px;
+    height: 111px;
 }
