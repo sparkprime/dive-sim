@@ -2,17 +2,54 @@ body {
     margin: 0;
     background-color: #d2e9ff;
 }
-.dial {
-    width: 64px;
-    height: 12px;
-    border: black;
-    border-style: solid;
-    border-width: 1px;
+
+#text {
+    z-index: 15;
+    position: absolute;
+    background-color: white;
+    width: 200px;
+    margin: 32px;
+    right: 220px;
+    bottom: 0;
+    padding: 16px;
 }
-.dial div {
+#info {
+    padding: 16px 0;
+}
+
+.dialog {
+    box-shadow: 0 0 8px 8px white;
+    z-index: 30;
+    position: absolute;
+    background-color: white;
     width: 50%;
-    height: 100%;
-    background: cyan;
+    margin-left: auto;
+    margin-right: auto;
+    bottom: 50%;
+    left: 0;
+    right: 0;
+    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 16px 32px;
+    font-family: sans-serif;
+}
+
+.dialog h1 {
+    text-align: center;
+}
+
+.dialog p {
+}
+
+.dialog div {
+    width: 100%;
+    text-align: center;
+}
+
+.dialog div button {
+    margin-left: auto;
+    margin-right: auto;
+    display: inline-block;
 }
 
 #window {
@@ -23,56 +60,51 @@ body {
     position: absolute;
     overflow: hidden;
 }
+
 #world {
-    top: 100px;
-    width: 100%;
-    bottom: 0;
     position: absolute;
+    top: 100px;
+    transform: translate(0px, 0px) scale(0.02, 0.02);
 }
+
 #topo {
     position: absolute;
-    height: 700px;
     background-color: #6281bb;
     pointer-events: none;
-}
-#text {
-    z-index: 15;
-    position: absolute;
-    background-color: white;
-    width: 200px;
-    margin: 32px;
-    right: 200px;
-    padding: 16px;
+    width: 100000px;
+    height: 40000px;
 }
 
 div#diver {
     z-index: 15;
     position: absolute;
 }
-
 img#diver-body {
-    height: 10px;
+    height: 800px;
 }
 
 img#dive-boat {
-    left: 10px;
+    top: -5800px;
+    left: 6500px;
     z-index: 10;
     position: absolute;
-    height: 110px;
-    top: -90px;
+    height: 6000px;
 }
 
-
-#info {
-    padding: 16px 0;
+img.bubble {
+    width: 200px;
+    position: absolute;
+    z-index: 20;
 }
+
 
 
 #gauge-assy {
     overflow: hidden;
     height: 444px;
     width: 201px;
-    right: 10px;
+    left: 16px;
+    bottom: 0;
     z-index: 10;
     position: absolute;
 }
@@ -131,8 +163,8 @@ img#gauge-needle {
 
 #lungs-assy {
     overflow: hidden;
-    top: 200px;
-    right: 220px;
+    bottom: 16px;
+    right: 16px;
     z-index: 10;
     position: absolute;
     height: 200px;

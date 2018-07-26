@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="0.11mm"
+   height="0.11mm"
+   viewBox="0 0 0.11 0.11"
+   version="1.1"
+   id="svg6478"
+   inkscape:version="0.92.2pre0 (973e216, 2017-07-25)"
+   sodipodi:docname="bubble.svg">
+  <defs
+     id="defs6472" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="128"
+     inkscape:cx="0.54916811"
+     inkscape:cy="-0.10155199"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:window-width="1436"
+     inkscape:window-height="1063"
+     inkscape:window-x="484"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid7023"
+       spacingx="0.099999997"
+       spacingy="0.099999997"
+       empspacing="10"
+       color="#3f3fff"
+       opacity="0.06666667"
+       empcolor="#3f3fff"
+       empopacity="0.17254902"
+       units="mm"
+       originx="-0.39499996"
+       originy="-0.49498779" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata6475">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-0.39499996,-296.39501)">
+    <circle
+       style="fill:#ffffff;fill-opacity:0.21266969;stroke:#dcffff;stroke-width:0.01;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.12669684"
+       id="path7025"
+       cx="0.44999996"
+       cy="296.45001"
+       r="0.050000001" />
+  </g>
+</svg>
