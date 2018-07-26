@@ -1,10 +1,77 @@
-let up_pressed = false;
-let down_pressed = false;
-let left_pressed = false;
-let right_pressed = false;
-let left_sq_pressed = false;
-let right_sq_pressed = false;
-let enter_pressed = false;
+var topo_path;
+
+var water_density_kg_l = 1.025;
+var air_density_kg_l = 0.0012;
+var max_depth = 40;
+var god_mode = false;
+var topo_coords = [];
+
+var body_mass_kg = 80;
+var body_displacement_l = 77;
+var rest_o2_consumption_l_s = 0.003;
+var swim_o2_consumption_l_s = 0.02;
+var lung_capacity_l = 6;
+var lung_residual_volume_l = 1.2;
+var breathe_rate_l_s = 3;
+var weights_mass_kg = 6;
+var ear_rupture_bar = 0.5;
+var ear_no_equalize_bar = 0.3;
+var ear_equalize_rate_bar_s = 0.1;
+var swim_speed_m_s = 0.8;
+
+var tank_o2_conc = 0.2095;
+var tank_contents_l = 2200;  // Before being compressed into the tank.
+var tank_volume_l = 10;  // At 1 ATM.
+var tank_mass_kg = 15;
+var tank_displacement_l = 17;
+
+var bcd_mass_kg = 5;
+var bcd_empty_displacement_l = 7;
+var bcd_max_contents_l = 8;
+var bcd_fill_rate_l_s = 6;
+var bcd_dump_rate_l_s = 4;
+
+var game_state = 'RUNNING';
+var distance_m = 12;
+var direction = 1;  // Right, or -1 to go left.
+var lung_volume_l = 0.5 * lung_capacity_l;
+var ear_bar = 1.01325;
+var lung_o2_conc = 0.19;
+var bcd_contents_l = 9;
+var height_m = 0;  // Negative means underwater.
+var min_height_m = 0;  // For max depth this dive.
+var vertical_velocity_m_s = 0;
+var dive_time_s = 0;
+var paused = false;
+
+function pressure_bar() {
+    if (height_m >= 0) {
+        return 1.01325;
+    } else {
+        return 1.01325 - height_m / 10;
+    }
+}
+
+function total_mass_kg() {
+    return body_mass_kg + weights_mass_kg + tank_mass_kg
+           + air_density_kg_l * tank_contents_l + bcd_mass_kg;
+}
+
+function bouyancy_n() {
+    let displacement_l =
+        body_displacement_l + tank_displacement_l + bcd_empty_displacement_l
+        + bcd_contents_l + lung_volume_l;
+    return (displacement_l * water_density_kg_l - total_mass_kg()) * 9.8;
+}
+
+var up_pressed = false;
+var down_pressed = false;
+var left_pressed = false;
+var right_pressed = false;
+var left_sq_pressed = false;
+var right_sq_pressed = false;
+var enter_pressed = false;
+
 document.onkeydown = function(e) {
     e = e || window.event;
     if (e.keyCode == 38) {
@@ -42,70 +109,6 @@ document.onkeyup = function(e) {
     } else if (e.keyCode == 13) {
         enter_pressed = false;
     }
-}
-
-let water_density_kg_l = 1.025;
-let air_density_kg_l = 0.0012;
-let max_depth = 35;
-
-let body_mass_kg = 80;
-let body_displacement_l = 77;
-let rest_o2_consumption_l_s = 0.003;
-let swim_o2_consumption_l_s = 0.02;
-let lung_capacity_l = 6;
-let lung_residual_volume_l = 1.2;
-let breathe_rate_l_s = 3;
-let weights_mass_kg = 6;
-let ear_rupture_bar = 0.5;
-let ear_no_equalize_bar = 0.3;
-let ear_equalize_rate_bar_s = 0.1;
-let swim_speed_m_s = 0.8;
-
-let tank_o2_conc = 0.2095;
-let tank_contents_l = 2200;  // Before being compressed into the tank.
-let tank_volume_l = 10;  // At 1 ATM.
-let tank_mass_kg = 15;
-let tank_displacement_l = 17;
-
-let bcd_mass_kg = 5;
-let bcd_empty_displacement_l = 7;
-let bcd_max_contents_l = 8;
-let bcd_fill_rate_l_s = 6;
-let bcd_dump_rate_l_s = 4;
-
-let game_state = 'RUNNING';
-let distance_m = 0;
-let direction = 1;  // Right, or -1 to go left.
-let lung_volume_l = 0.5 * lung_capacity_l;
-let ear_bar = 1.01325;
-let lung_o2_conc = 0.19;
-let bcd_contents_l = 9;
-let height_m = 0;  // Negative means underwater.
-let min_height_m = 0;  // For max depth this dive.
-let vertical_velocity_m_s = 0;
-let dive_time_s = 0;
-
-function pressure_bar() {
-    if (height_m >= 0) {
-        return 1.01325;
-    } else {
-        return 1.01325 - height_m / 10;
-    }
-}
-
-function tank_gauge() {
-    return Math.max(0, tank_contents_l / tank_volume_l - pressure_bar());
-}
-
-function total_mass_kg() {
-    return body_mass_kg + weights_mass_kg + tank_mass_kg
-           + air_density_kg_l * tank_contents_l + bcd_mass_kg;
-}
-
-function bouyancy_n() {
-    let displacement_l = body_displacement_l + tank_displacement_l + bcd_empty_displacement_l
-                       + bcd_contents_l + lung_volume_l;
-    return (displacement_l * water_density_kg_l - total_mass_kg()) * 9.8;
 }
 
 function update_simulation(elapsed_s) {
@@ -215,31 +218,69 @@ function update_simulation(elapsed_s) {
         }
 
         // Game state changes:
-        if (blood_o2_sat <= 0.8) {
-            game_state = 'ASPHYXIATED';
-        }
-        if (lung_volume_l / lung_capacity_l > 1.1) {
-            game_state = 'LUNG_EXPANSION_INJURY';
-        }
-        if (height_m < -35) {
-            game_state = 'COLLIDED_WITH_CORAL';
-        }
-        if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
-            game_state = 'RUPTURED_EARDRUM';
+        if (!god_mode) {
+            if (blood_o2_sat <= 0.8) {
+                game_state = 'ASPHYXIATED';
+            }
+            if (lung_volume_l / lung_capacity_l > 1.1) {
+                game_state = 'LUNG_EXPANSION_INJURY';
+            }
+            if (height_m < -35) {
+                game_state = 'COLLIDED_WITH_CORAL';
+            }
+            if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
+                game_state = 'RUPTURED_EARDRUM';
+            }
         }
 
         dive_time_s += elapsed_s;
     }
 }
 
-function color_from_ratio(ratio) {
-    if (ratio < .25) {
-        return 'red';
-    } else if (ratio < .50) {
-        return 'yellow';
-    } else {
-        return 'green';
+function dot_product(x1, y1, x2, y2) {
+    return x1 * x2 + y1 * y2;
+}
+
+function distance_line_to_diver(x1, y1, x2, y2, px, py) {
+    // Find t, the parameter of the line that is nearest to (px, py).
+    // If 0 <= t <= 1 then this is the right place, otherwise we need to
+    // clip it to the ends of the line.
+    let t = dot_product(px - x1, py - y1, x2 - x1, y2 - y1)
+          / dot_product(x2 - x1, y2 - y1, x2 - x1, y2 - y1);
+    t = Math.min(1, Math.max(0, t));
+    let lx = x1 + t * (x2 - x1);
+    let ly = y1 + t * (y2 - y1);
+    // scale up y contribution to compensate for the fact that the diver
+    // is more like an oval than a circle.
+    return Math.sqrt(dot_product((lx - px) / 1, (ly - py) / 0.4,
+                                 (lx - px) / 1, (ly - py) / 0.4));
+}
+
+function inside_topo(x, y) {
+    // Count segment intersections of a ray escaping a concave polygon.
+    let inside = false;
+    for (let i = 0; i < topo_coords.length; ++i) {
+        let j = (i + topo_coords.length - 1) % topo_coords.length;
+        let xi = topo_coords[i][0], yi = topo_coords[i][1];
+        let xj = topo_coords[j][0], yj = topo_coords[j][1];
+        
+        let intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
     }
+    return inside;
+}
+
+function too_close(x, y) {
+    let min_distance = 100000000;
+    for (let i = 0; i < topo_coords.length; ++i) {
+        let j = (i + topo_coords.length - 1) % topo_coords.length;
+        let xi = topo_coords[i][0], yi = topo_coords[i][1];
+        let xj = topo_coords[j][0], yj = topo_coords[j][1];
+        let d = distance_line_to_diver(xi, yi, xj, yj, x, y);
+        min_distance = Math.min(min_distance, d);
+    }
+    return min_distance < 1;
 }
 
 function format_number(number, digits, dec) {
@@ -252,11 +293,16 @@ function update_view() {
     let info = document.getElementById('info');
     if (game_state == 'RUNNING') {
         let gauge_needle = document.getElementById('gauge-needle');
-        gauge_needle.style['transform'] = 'rotate(' + (tank_gauge() / 50 * 30) + 'deg)';
+        let tank_gauge = Math.max(
+            0, tank_contents_l / tank_volume_l - pressure_bar());
+        gauge_needle.style['transform'] =
+            'rotate(' + (tank_gauge / 50 * 30) + 'deg)';
 
         let diver = document.getElementById('diver');
-        diver.style['top'] = (-height_m / max_depth) * 100 + '%';
-        diver.style['left'] = (distance_m + 20) * 10 + 'px';
+        diver.style['top'] =
+            ((-height_m / max_depth) * 700 - diver.clientHeight / 2) + 'px';
+        diver.style['left'] =
+            (distance_m / 100 * 1750 - diver.clientWidth / 2) + 'px';
         if (direction > 0) {
             diver.style['transform'] = 'scale(1, 1)';
         } else {
@@ -267,9 +313,9 @@ function update_view() {
         if (blood_o2_sat > 0.95) {
             blood_o2_status = '0deg';
         } else if (blood_o2_sat > 0.925) {
-            blood_o2_status = '-20deg';
+            blood_o2_status = '-15deg';
         } else if (blood_o2_sat > 0.9) {
-            blood_o2_status = '-40deg';
+            blood_o2_status = '-35deg';
         } else if (blood_o2_sat > 0.875) {
             blood_o2_status = '-60deg';
         } else if (blood_o2_sat > 0.85) {
@@ -278,22 +324,35 @@ function update_view() {
             blood_o2_status = '-110deg';
         }
 
-        document.getElementById('breathless-warning').style['visibility'] =
-            blood_o2_sat < 0.825 && (dive_time_s * 3) % 1 > 0.7 ? 'visible' : 'hidden';
+        let breathless_warning = document.getElementById('breathless-warning');
+        if (blood_o2_sat < 0.825 && (dive_time_s * 3) % 1 > 0.7) {
+            breathless_warning.style['visibility'] = 'visible';
+        } else {
+            breathless_warning.style['visibility'] = 'hidden';
+        }
 
         let lung_scale = 0.5 + 0.5 * (lung_volume_l / lung_capacity_l);
-        document.getElementById('expansion-injury-warning').style['visibility'] =
-            lung_scale > 1.015 && (dive_time_s * 3) % 1 > 0.7 ? 'visible' : 'hidden';
+        let expansion_warning = document.getElementById('expansion-warning');
+        if (lung_scale > 1.015 && (dive_time_s * 3) % 1 > 0.7) {
+            expansion_warning.style['visibility'] = 'visible';
+        } else {
+            expansion_warning.style['visibility'] = 'hidden';
+        }
         let lungs = document.getElementsByClassName('lung-foreground');
         for (let lung of lungs) {
-            lung.style['transform'] = 'scale(' + lung_scale + ', ' + lung_scale + ')';
+            lung.style['transform'] =
+                'scale(' + lung_scale + ', ' + lung_scale + ')';
             lung.style['filter'] = 'hue-rotate(' + blood_o2_status + ')';
         }
 
-        document.getElementById('depth').innerHTML = format_number(-height_m, 2, 1);
-        document.getElementById('max-depth').innerHTML = format_number(-min_height_m, 2, 1);
-        document.getElementById('dive-time').innerHTML = format_number(dive_time_s / 60, 2, 0);
-        document.getElementById('no-deco-time').innerHTML = format_number(99, 2, 0);
+        document.getElementById('depth').innerHTML =
+            format_number(-height_m, 2, 1);
+        document.getElementById('max-depth').innerHTML =
+            format_number(-min_height_m, 2, 1);
+        document.getElementById('dive-time').innerHTML =
+            format_number(dive_time_s / 60, 2, 0);
+        document.getElementById('no-deco-time').innerHTML =
+            format_number(99, 2, 0);
 
 
         let ear_pain = Math.abs(ear_bar - pressure_bar());
@@ -314,12 +373,26 @@ function update_view() {
 
             '<tr>',
             '<td>BCD inflation:</td>',
-            '<td>' + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0) + '%</td>',
+            '<td>'
+            + (bcd_contents_l / bcd_max_contents_l * 100).toFixed(0)
+            + '%</td>',
             '</tr>',
 
             '<tr>',
             '<td>Ears:</td>',
             '<td>' + ear_status + '</td>',
+            '</tr>',
+            '<tr>',
+
+            '<tr>',
+            '<td>Inside:</td>',
+            '<td>' + inside_topo(distance_m, height_m) + '</td>',
+            '</tr>',
+            '<tr>',
+
+            '<tr>',
+            '<td>Too close:</td>',
+            '<td>' + too_close(distance_m, height_m) + '</td>',
             '</tr>',
             '<tr>',
 
@@ -331,11 +404,87 @@ function update_view() {
 }
 
 function tick() {
-    update_simulation(10 / 1000);
-    update_view();
+    if (!paused) {
+        update_simulation(10 / 1000);
+        update_view();
+    }
 }
 
 function start_simulation() {
     setInterval(tick, 10); // Time in milliseconds
 }
 
+function init() {
+    let d = (
+        topo
+        .contentDocument.getElementsByTagName('svg')[0]
+        .getElementsByTagName('g')[0]
+        .getElementsByTagName('path')[0]
+        .getAttribute('d'));
+    let tokens = d.match(/([^ ,]+)/g);
+    console.log(tokens);
+    let last_x = 0, last_y = 0;
+    let current = 0;
+    function peek() {
+        return tokens[current];
+    }
+    function pop() {
+        return tokens[current++];
+    }
+    while (true) {
+        let tok = pop();
+        if (tok == 'M') {
+            while (!isNaN(peek())) {
+                last_x = Number(pop());
+                last_y = Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'm') {
+            while (!isNaN(peek())) {
+                last_x += Number(pop());
+                last_y += Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'Z') {
+            break;
+        } else if (tok == 'z') {
+            break;
+        } else if (tok == 'L') {
+            while (!isNaN(peek())) {
+                last_x = Number(pop());
+                last_y = Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'l') {
+            while (!isNaN(peek())) {
+                last_x += Number(pop());
+                last_y += Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'H') {
+            while (!isNaN(peek())) {
+                last_x = Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'h') {
+            while (!isNaN(peek())) {
+                last_x += Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'V') {
+            while (!isNaN(peek())) {
+                last_y = Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else if (tok == 'v') {
+            while (!isNaN(peek())) {
+                last_y += Number(pop());
+                topo_coords.push([last_x, -last_y]);
+            }
+        } else {
+            throw "Bad SVG path: " + d;
+        }
+    }
+    console.log(topo_coords);
+    start_simulation();
+}

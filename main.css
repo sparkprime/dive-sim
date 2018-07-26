@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    background-color: #d2e9ff;  /* Sky */
+    background-color: #d2e9ff;
 }
 .dial {
     width: 64px;
@@ -15,41 +15,43 @@ body {
     background: cyan;
 }
 
-#graphics {
+#window {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    overflow: hidden;
+}
+#world {
+    top: 100px;
     width: 100%;
     bottom: 0;
     position: absolute;
 }
-.sea {
-    position: relative;
-    height: 690px;
+#topo {
+    position: absolute;
+    height: 700px;
     background-color: #6281bb;
-}
-.sea#bottom {
-    height: 10px;
-}
-.seabed {
-    height: 40px;
-    background-color: #e6cfa3;
+    pointer-events: none;
 }
 #text {
-    float: right;
+    z-index: 15;
+    position: absolute;
     background-color: white;
-    width: 400px;
+    width: 200px;
     margin: 32px;
-    right: 0;
+    right: 200px;
     padding: 16px;
 }
 
 div#diver {
     z-index: 15;
     position: absolute;
-    height: 10px;
 }
 
 img#diver-body {
-    position: absolute;
-    height: 100%;
+    height: 10px;
 }
 
 img#dive-boat {
@@ -130,7 +132,7 @@ img#gauge-needle {
 #lungs-assy {
     overflow: hidden;
     top: 200px;
-    right: 280px;
+    right: 220px;
     z-index: 10;
     position: absolute;
     height: 200px;

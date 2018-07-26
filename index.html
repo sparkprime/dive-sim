@@ -2,24 +2,26 @@
 <head>
     <meta charset='UTF-8'>
     <title>The diving simulator game</title>
+    <script src="two.min.js"></script>
     <script src="main.js"></script>
     <link rel="stylesheet" type="text/css" href="main.css" />
 </head>
 
 <body>
-    <div id=graphics>
-        <div class=sea>
+    <div id=window>
+        <div id=world>
             <div id=text>
-            <!--
+                <!--
                 <table>
                 <tr><td>Breathe in/out:</td><td>↑ / ↓</td></tr>
                 <tr><td>Deflate/Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a>:</td><td>[ / ]</td></tr>
                 <tr><td>Equalize:</td><td>Enter</td></tr>
                 </table>
-            -->
+                -->
                 <div id=info>
                 </div>
             </div>
+            <object id=topo data="topo.svg"></object>
             <div id=diver>
                 <img id=diver-body src="diver.svg">
             </div>
@@ -38,19 +40,16 @@
                 <img class="lung lung-background lung-right" src="right-lung.svg">
                 <img class="lung lung-foreground lung-left" src="left-lung.svg">
                 <img class="lung lung-foreground lung-right" src="right-lung.svg">
-                <img class="lung" id=expansion-injury-warning src="expansion-injury-warning.svg">
+                <img class="lung" id=expansion-warning src="expansion-injury-warning.svg">
                 <img class="lung" id=breathless-warning src="breathless-warning.svg">
             </div>
-        </div>
-        <div class=sea id=bottom>
-        </div>
-        <div class=seabed>
         </div>
     </div>
 </body>
 
 <script>
-start_simulation();
+var topo = document.getElementById('topo');
+topo.onload = init;
 </script>
 
 </html>
