@@ -69,7 +69,7 @@ function game_over(msg) {
 
 function reset_game() {
     tank_contents_l = 2200;
-    distance_m = 4;
+    distance_m = 2.5;
     direction = 1;  // Right, or -1 to go left.
     lung_volume_l = 0.5 * lung_capacity_l;
     ear_bar = 1.01325;
@@ -210,7 +210,17 @@ function position(node, x, y) {
 function pan(x, y) {
     x = Math.max(0, Math.min(100, x));
     y = Math.max(-40, Math.min(0, y));
-    world.style.transform = 'scale(' + zoom + ', ' + zoom + ') translate(' + (1000 * x) + 'px, ' + (-1000 * y) + 'px)'
+    x *= 1000 * zoom;
+    y *= 1000 * zoom;
+    x -= document.body.clientWidth / 2;
+    y += document.body.clientHeight / 2;
+    if (x < 0) x = 0;
+    x = Math.min(x, 100 * zoom * 1000 - document.body.clientWidth);
+    console.log(x);
+    y = Math.max(y, -40 * zoom * 1000 + document.body.clientHeight);
+    world.style.transform =
+        'translate(' + (-x) + 'px, ' + y + 'px) '
+        + 'scale(' + zoom + ', ' + zoom + ')';
 }
 
 function update_bubbles(elapsed_s) {
@@ -245,8 +255,8 @@ function distance_line_to_diver(x1, y1, x2, y2, px, py) {
     let ly = y1 + t * (y2 - y1);
     // scale up y contribution to compensate for the fact that the diver
     // is more like an oval than a circle.
-    return Math.sqrt(dot_product((lx - px) / 1, (ly - py) / 0.4,
-                                 (lx - px) / 1, (ly - py) / 0.4));
+    return Math.sqrt(dot_product((lx - px) / 0.8, (ly - py) / 0.3,
+                                 (lx - px) / 0.8, (ly - py) / 0.3));
 }
 
 /** Are we inside any topo polygon? */
@@ -391,9 +401,11 @@ function update_simulation(elapsed_s) {
     if (left_pressed && !right_pressed) {
         direction = -1;
         distance_m -= swim_speed_m_s * elapsed_s;
+        if (distance_m < 1) distance_m = 1;
     } else if (right_pressed && !left_pressed) {
         direction = 1;
         distance_m += swim_speed_m_s * elapsed_s;
+        if (distance_m > 99) distance_m = 99;
     }
 
     // Game state changes:
@@ -410,8 +422,8 @@ function update_simulation(elapsed_s) {
                 '<p>You died of a lung expansion injury.</p>'
                 + '<p>When ascending, the change in environmental pressure '
                 + 'causes your lungs to inflate like a balloon.  You must '
-                + 'compensate by continually breathing out or suffer a '
-                + 'potentially fatal injury.</p>'
+                + 'compensate by continually breathing out or potentially '
+                + 'suffer a fatal injury.</p>'
             );
         }
         if (Math.abs(ear_bar - pressure_bar()) > ear_rupture_bar) {
@@ -541,6 +553,7 @@ function tick() {
     if (game_state == 'RUNNING') {
         update_simulation(elapsed_s);
         update_bubbles(elapsed_s);
+        pan(distance_m, height_m)
     }
     update_view();
 }

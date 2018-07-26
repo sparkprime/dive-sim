@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="40.005039"
-   height="20.962574"
-   viewBox="0 0 40.005037 20.962574"
+   width="12441.701"
+   height="4000"
+   viewBox="0 0 12441.7 4000"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.2pre0 (973e216, 2017-07-25)"
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="31.788004"
-     inkscape:cx="6.1905025"
-     inkscape:cy="7.1405577"
+     inkscape:zoom="0.043901393"
+     inkscape:cx="10112.285"
+     inkscape:cy="2987.8414"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -45,12 +45,13 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     units="px">
+     units="px"
+     inkscape:snap-global="false">
     <inkscape:grid
        type="xygrid"
        id="grid3342"
-       originx="1745.005"
-       originy="-926.6982" />
+       originx="1745.0318"
+       originy="-926.67339" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -68,15 +69,15 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(1745.0052,-104.70147)">
+     transform="translate(1745.0321,3874.3112)">
     <path
-       style="fill:none;stroke:#000000;stroke-width:0.15000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m -1722.0002,123.36224 9,2"
+       style="fill:none;stroke:#000000;stroke-width:54.81467438;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6675.2182,-724.47775 9965.6984,6.0294133"
        id="path5809"
        inkscape:connector-curvature="0" />
     <g
        id="g4732"
-       transform="matrix(-0.00826866,0.00440565,0.00403338,0.00903184,-1749.8096,116.71671)">
+       transform="matrix(-3.0230948,1.6091794,1.4746394,3.298912,-3492.143,-3151.7813)">
       <rect
          y="452.36221"
          x="-1320"
@@ -105,16 +106,17 @@
          style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:15.60040092;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <path
-       style="fill:#e3e4e4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.15000001;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m -1744.956,123.2151 h 9.6402 v -2.80362 h 5.177 l 3.5449,2.80362 h 5.1006 l -2.0402,2.39971 h -21.4225 z"
+       style="fill:#e3e4e4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:54.81467438;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M -1717.6248,-778.22116 H 1806.9183 V -1802.2534 h 1892.7566 l 1296.0464,1024.03224 h 1864.824 L 6114.6309,98.281477 h -7832.2557 z"
        id="path4693"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccccccc" />
-    <circle
-       style="fill:#ffffee;fill-opacity:1;stroke:#000000;stroke-width:0.15000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+    <ellipse
+       style="fill:#ffffee;fill-opacity:1;stroke:#000000;stroke-width:54.81467438;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path1420"
-       cx="-1712.5876"
-       cy="123.94965"
-       r="1.511811" />
+       cx="10116.53"
+       cy="-509.92282"
+       rx="552.73138"
+       ry="552.1944" />
   </g>
 </svg>
