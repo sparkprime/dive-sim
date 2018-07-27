@@ -23,13 +23,14 @@ body {
 
 .dialog {
     box-shadow: 0 0 8px 8px white;
+    font-size: 14px;
     z-index: 30;
     position: absolute;
     background-color: white;
-    width: 50%;
+    width: 40%;
     margin-left: auto;
     margin-right: auto;
-    bottom: 50%;
+    bottom: 30%;
     left: 0;
     right: 0;
     border-radius: 10px;
@@ -40,9 +41,21 @@ body {
 
 .dialog h1 {
     text-align: center;
+    font-size: 16px;
 }
 
-.dialog p {
+.dialog p.small {
+    font-size: 11px;
+    color: #808080;
+    padding: 12px 12px 0 12px;
+}
+
+.dialog table {
+    margin: auto;
+}
+
+.dialog td {
+    padding: 0 16px;
 }
 
 .dialog div {
