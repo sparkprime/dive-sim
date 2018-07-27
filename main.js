@@ -448,7 +448,7 @@ function update_simulation(elapsed_s) {
                 '<p>You suffered a ruptured ear drum.</p>'
                 + '<p>When descending, the air space in your inner ear must be '
                 + 'continually equalized ([enter] key) to the increasing '
-                + 'environental pressure.  Otherwise, the force pushing '
+                + 'environmental pressure.  Otherwise, the force pushing '
                 + 'against the ear drum may rupture it, requiring immediate '
                 + 'medical attention.</p>'
             );
