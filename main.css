@@ -27,7 +27,7 @@ body {
     z-index: 30;
     position: absolute;
     background-color: white;
-    width: 40%;
+    width: 50%;
     margin-left: auto;
     margin-right: auto;
     bottom: 30%;
@@ -41,7 +41,7 @@ body {
 
 .dialog h1 {
     text-align: center;
-    font-size: 16px;
+    font-size: 17px;
 }
 
 .dialog p.small {
@@ -51,6 +51,7 @@ body {
 }
 
 .dialog table {
+    font-size: 14px;
     margin: auto;
 }
 
