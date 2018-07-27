@@ -22,7 +22,7 @@ body {
 }
 
 .dialog {
-    box-shadow: 0 0 8px 8px white;
+    box-shadow: 0 0 32px 32px white;
     font-size: 14px;
     z-index: 30;
     position: absolute;
