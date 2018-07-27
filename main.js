@@ -50,7 +50,6 @@ var dive_time_s;
 var equalizing;
 var blood_o2_sat;
 var equalize_pressure_too_great;
-var equalize_not_enough_air;
 
 function set_game_state(v) {
     game_state = v;
@@ -86,7 +85,6 @@ function reset_game() {
     dive_time_s = 0;
     equalizing = false;
     equalize_pressure_too_great = false;
-    equalize_not_enough_air = false;
     blood_o2_sat = 1;
     clear_bubbles();
     set_game_state('RUNNING');
@@ -398,12 +396,9 @@ function update_simulation(elapsed_s) {
     // equalizing 'wins' -- i.e., you equalize, but you don't breathe.
     equalizing = enter_pressed;
     equalize_pressure_too_great = false;
-    equalize_not_enough_air = false;
     if (equalizing) {
         let diff_bar = pressure_bar() - ear_bar;
-        if (lung_volume_l < lung_volume_to_equalize_l) {
-            equalize_not_enough_air = true;
-        } else if (diff_bar < ear_no_equalize_bar) {
+        if (diff_bar < ear_no_equalize_bar) {
             diff_bar = Math.min(
                 diff_bar, ear_equalize_rate_bar_s * elapsed_s);
             ear_bar += diff_bar;
@@ -556,9 +551,6 @@ function update_view() {
     if (equalizing) {
         equalize_attempt.style.visibility = 'visible';
         if (equalize_pressure_too_great) {
-            equalize_failure.style.visibility = 'visible';
-        }
-        if (equalize_not_enough_air) {
             equalize_failure.style.visibility = 'visible';
         }
     }
