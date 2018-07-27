@@ -5,7 +5,16 @@ var god_mode = false;
 var topo_coords = [];
 var bubble_rise_speed = 1.3;  // Can be more, according to randoness.
 var bubble_interval = 0.1;
+var max_bubbles = 100;
 var zoom = 0.05;
+var treasure_chest_radius = 0.75;
+var treasure_chest_positions = [
+    [30, -18.7],
+    [21, -6.5],
+    [45, -37.3],
+    [75, -34.3],
+    [86.4, -34.95],
+];
 
 var body_mass_kg = 80;
 var body_displacement_l = 77;
@@ -50,6 +59,7 @@ var dive_time_s;
 var equalizing;
 var blood_o2_sat;
 var equalize_pressure_too_great;
+var treasure_collected;
 
 function set_game_state(v) {
     game_state = v;
@@ -71,6 +81,55 @@ function do_game_over(msg) {
     set_game_state('GAME_OVER');
 }
 
+var treasure_chests = [];
+
+function update_money() {
+    let imgs = [];
+    for (let i = 0; i < treasure_chest_positions.length; ++i) {
+        if (i < treasure_collected) {
+            imgs.push('<img src=dollar.svg class=dollar_found>')
+        } else {
+            imgs.push('<img src=dollar.svg class=dollar>')
+        }
+    }
+    money.innerHTML = imgs.join('');
+}
+
+function reset_treasure() {
+    for (let chest of treasure_chests) {
+        world.removeChild(chest);
+    }
+    treasure_chests = [];
+    for (let chest_pos of treasure_chest_positions) {
+        let chest = document.createElement('IMG');
+        chest.src = 'treasure.svg';
+        chest.empty = false;
+        chest.className = 'treasure';
+        chest.onload = function() {
+            world.appendChild(chest);
+            position(chest, chest_pos[0], chest_pos[1]);
+        }
+        treasure_chests.push(chest);
+    }
+    treasure_collected = 0;
+    update_money();
+}
+
+function test_treasure() {
+    for (let i = 0; i < treasure_chest_positions.length ; ++i) {
+        let chest = treasure_chests[i];
+        if (chest.empty) continue;
+        let chest_pos = treasure_chest_positions[i];
+        let d = vect_length(distance_m - chest_pos[0], height_m - chest_pos[1]);
+        if (d < treasure_chest_radius) {
+            chest.src = 'treasure-empty.svg';
+            chest.empty = true;
+            treasure_collected++;
+            update_money();
+        }
+    }
+}
+
 function reset_game() {
     tank_contents_l = 2200;
     distance_m = 10.5;
@@ -87,6 +146,7 @@ function reset_game() {
     equalize_pressure_too_great = false;
     blood_o2_sat = 1;
     clear_bubbles();
+    reset_treasure();
     set_game_state('RUNNING');
 }
 
@@ -160,7 +220,7 @@ document.onkeyup = function(e) {
 }
 
 function make_bubble(elapsed_s, x, y) {
-    if (bubbles.length > 200) return;
+    if (bubbles.length > max_bubbles) return;
     time_since_last_bubble += elapsed_s;
     if (time_since_last_bubble < bubble_interval) return;
     time_since_last_bubble -= bubble_interval;
@@ -250,12 +310,20 @@ function dot_product(x1, y1, x2, y2) {
     return x1 * x2 + y1 * y2;
 }
 
+function vect_length2(x, y) {
+    return dot_product(x, y, x, y);
+}
+
+function vect_length(x, y) {
+    return Math.sqrt(vect_length2(x, y));
+}
+
 function distance_line_to_diver(x1, y1, x2, y2, px, py) {
     // Find t, the parameter of the line that is nearest to (px, py).
     // If 0 <= t <= 1 then this is the right place, otherwise we need to
     // clip it to the ends of the line.
     let t = dot_product(px - x1, py - y1, x2 - x1, y2 - y1)
-          / dot_product(x2 - x1, y2 - y1, x2 - x1, y2 - y1);
+          / vect_length2(x2 - x1, y2 - y1);
     t = Math.min(1, Math.max(0, t));
     let lx = x1 + t * (x2 - x1);
     let ly = y1 + t * (y2 - y1);
@@ -426,6 +494,7 @@ function update_simulation(elapsed_s) {
     }
 
     // Game state changes:
+    test_treasure();
     if (!god_mode) {
         if (blood_o2_sat <= 0.8) {
             do_game_over(
@@ -646,7 +715,7 @@ function init_topo() {
                     poly.push([last_x, -last_y]);
                 }
             } else {
-                throw "Bad SVG path: " + topo_path.id + ": " + d;
+                throw 'Bad SVG path: ' + topo_path.id + ': ' + d;
             }
         }
     }

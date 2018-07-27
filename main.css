@@ -3,6 +3,19 @@ body {
     background-color: #d2e9ff;
 }
 
+div#money {
+    padding: 16px;
+}
+
+img.dollar_found {
+    margin: 0 4px;
+}
+
+img.dollar {
+    margin: 0 4px;
+    filter: saturate(0);
+}
+
 #text {
     z-index: 15;
     position: absolute;
@@ -89,10 +102,11 @@ body {
     pointer-events: none;
     width: 100000px;
     height: 40000px;
+    z-index: -5;
 }
 
 div#diver {
-    z-index: 15;
+    z-index: 5;
     position: absolute;
 }
 img#diver_body {
@@ -102,14 +116,17 @@ img#diver_body {
 img#dive_boat {
     top: -3700px;
     left: 12400px;
-    z-index: 10;
     position: absolute;
 }
 
 img.bubble {
     width: 200px;
     position: absolute;
-    z-index: 20;
+    z-index: 10;
+}
+
+img.treasure {
+    position: absolute;
 }
 
 
@@ -120,7 +137,6 @@ img.bubble {
     width: 201px;
     left: 16px;
     bottom: 0;
-    z-index: 10;
     position: absolute;
 }
 
@@ -185,7 +201,6 @@ img.fill {
     overflow: hidden;
     bottom: 16px;
     right: 16px;
-    z-index: 10;
     position: absolute;
     height: 200px;
     width: 200px;
@@ -211,7 +226,6 @@ img.fill {
 #ears_assy {
     bottom: 226px;
     right: 16px;
-    z-index: 10;
     position: absolute;
     width: 200px;
     height: 111px;

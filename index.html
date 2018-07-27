@@ -8,48 +8,12 @@
 
 <body>
     <div id=pane>
-        <div id=game_over class=dialog>
-            <h1>Game over!</h1>
-            <p id=game_over_msg>You forgot to breathe.</p>
-            <div>
-                <button onclick='reset_game()'>Play again</button>
+        <div id=world>
+            <object id=topo onload='init()' data="topo.svg"></object>
+            <div id=diver>
+                <img id=diver_body src="diver.svg">
             </div>
-        </div>
-        <div id=paused class=dialog>
-            <h1>Paused!</h1>
-            <div>
-                <button onclick=toggle_pause()>Unpause</button>
-            </div>
-        </div>
-        <div id=splash class=dialog>
-            <h1>Diving!</h1>
-            <p>Diving is easy. Prove it by collecting treasure!</p>
-            <table>
-                <tr><td>Breathe in</td> <td><code>Up</code></td></tr>
-                <tr><td>Breathe out</td> <td><code>Down</code></td></tr>
-                <tr><td>Swim left</td> <td><code>Left</code></td></tr>
-                <tr><td>Swim right</td> <td><code>Right</code></td></tr>
-                <tr><td>Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a></td> <td><code>[</code></td></tr>
-                <tr><td>Deflate BCD</td> <td><code>]</code></td></tr>
-                <tr><td><a
-                href=https://www.diversalertnetwork.org/health/SmartGuide-Ear/index.html>Equalize</a> ears</td> <td><code>Enter</code></td></tr>
-            </table>
-            <p>
-                You can't equalize if your ears are in pain: ascend instead.
-                You also can't breathe while equalizing.
-            </p>
-            <p>
-                Beware of lung expansion injuries on ascent.  Friends don't let
-                friends touch the coral.  Have fun!  Don't forget to breathe!
-            </p>
-            <div>
-                <button onclick=set_game_state('RUNNING')>Begin</button>
-            </div>
-            <p class=small>
-                Disclaimer: It probably goes without saying but this is not a
-                dive computer / planner.  The models are not accurate enough. Do
-                not use this to plan dives!
-            </p>
+            <img id=dive_boat src="dive-boat.svg">
         </div>
         <div id=gauge_assy>
             <img id=gauge src="gauge.svg">
@@ -77,14 +41,56 @@
             <img class=fill id=equalize_attempt src="equalize-attempt.svg">
             <img class=fill id=equalize_failure src="equalize-failure.svg">
         </div>
+        <div id=money>
+        </div>
         <div id=text>
         </div>
-        <div id=world>
-            <object id=topo onload='init()' data="topo.svg"></object>
-            <div id=diver>
-                <img id=diver_body src="diver.svg">
+        <div id=game_over class=dialog>
+            <h1>Game over!</h1>
+            <p id=game_over_msg>You forgot to breathe.</p>
+            <div>
+                <button onclick='reset_game()'>Play again</button>
             </div>
-            <img id=dive_boat src="dive-boat.svg">
+        </div>
+        <div id=paused class=dialog>
+            <h1>Paused!</h1>
+            <div>
+                <button onclick=toggle_pause()>Unpause</button>
+            </div>
+        </div>
+        <div id=splash class=dialog>
+            <h1>Diving is easy. Prove it by collecting treasure!</h1>
+            <p>
+                All you have to do is swim over the treasure chests, then return
+                to the dive boat without damaging yourself or the marine
+                environment.
+            </p>
+            <table>
+                <tr><td>Breathe in</td> <td><code>Up</code></td></tr>
+                <tr><td>Breathe out</td> <td><code>Down</code></td></tr>
+                <tr><td>Swim left</td> <td><code>Left</code></td></tr>
+                <tr><td>Swim right</td> <td><code>Right</code></td></tr>
+                <tr><td>Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a></td> <td><code>[</code></td></tr>
+                <tr><td>Deflate BCD</td> <td><code>]</code></td></tr>
+                <tr><td><a
+                href=https://www.diversalertnetwork.org/health/SmartGuide-Ear/index.html>Equalize</a> ears</td> <td><code>Enter</code></td></tr>
+            </table>
+            <p>
+                You can't equalize if your ears are in pain: ascend instead.
+                You also can't breathe while equalizing.
+            </p>
+            <p>
+                Beware of lung expansion injuries on ascent.  Friends don't let
+                friends touch the coral.  Have fun!  Don't forget to breathe!
+            </p>
+            <div>
+                <button onclick=set_game_state('RUNNING')>Begin</button>
+            </div>
+            <p class=small>
+                Disclaimer: It probably goes without saying but this is not a
+                dive computer / planner.  The models are not accurate enough. Do
+                not use this to plan dives!
+            </p>
         </div>
     </div>
 </body>
