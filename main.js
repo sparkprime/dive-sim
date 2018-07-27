@@ -73,7 +73,7 @@ function do_game_over(msg) {
 
 function reset_game() {
     tank_contents_l = 2200;
-    distance_m = 2.5;
+    distance_m = 10.5;
     direction = 1;  // Right, or -1 to go left.
     lung_volume_l = 0.5 * lung_capacity_l;
     ear_bar = 1.01325;
