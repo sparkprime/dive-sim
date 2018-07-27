@@ -105,7 +105,7 @@ function total_mass_kg() {
            + air_density_kg_l * tank_contents_l + bcd_mass_kg;
 }
 
-function bouyancy_n() {
+function buoyancy_n() {
     let displacement_l =
         body_displacement_l + tank_displacement_l + bcd_empty_displacement_l
         + bcd_contents_l + lung_volume_l;
@@ -365,9 +365,9 @@ function update_simulation(elapsed_s) {
     blood_o2_sat = (
         0.8 + ((lung_o2_conc - 0.06) / (tank_o2_conc - 0.06)) * 0.2);
 
-    // Bouyancy
+    // Buoyancy
     let old_pressure_bar = pressure_bar();
-    let vertical_acceleration_m_s_s = bouyancy_n() / total_mass_kg();
+    let vertical_acceleration_m_s_s = buoyancy_n() / total_mass_kg();
     vertical_velocity_m_s += vertical_acceleration_m_s_s * elapsed_s;
     if (height_m >= 0) {
         // Cannot float above the surface.
@@ -436,7 +436,7 @@ function update_simulation(elapsed_s) {
             do_game_over(
                 '<p>You forgot to breathe.</p>'
                 + '<p>Controlled continuous breathing is essential for good '
-                + 'bouyancy control, as well as basic survival!</p>'
+                + 'buoyancy control, as well as basic survival!</p>'
             );
         }
         if (lung_volume_l / lung_capacity_l > 1.1) {
