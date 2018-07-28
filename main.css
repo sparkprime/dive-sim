@@ -198,13 +198,13 @@ img.fill {
     position: absolute;
 }
 
-#lungs_assy {
+#bust_assy {
     overflow: hidden;
     bottom: 16px;
     right: 16px;
     position: absolute;
-    height: 200px;
-    width: 200px;
+    height: 322px;
+    width: 217px;
 }
 
 .lung_background {
@@ -217,11 +217,11 @@ img.fill {
 }
 
 .lung_left {
-    transform-origin: 84px 30px;
+    transform-origin: 84px 155px;
 }
 
 .lung_right {
-    transform-origin: 110px 30px;
+    transform-origin: 132px 155px;
 }
 
 #ears_assy {

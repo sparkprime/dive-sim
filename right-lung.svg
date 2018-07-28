@@ -10,12 +10,12 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="217.31219"
-   height="218.50085"
-   viewBox="0 0 217.3122 218.50086"
+   height="322.25"
+   viewBox="0 0 217.3122 322.25"
    id="svg4619"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="right-lung.svg">
+   inkscape:version="0.92.2pre0 (973e216, 2017-07-25)"
+   sodipodi:docname="lungs.svg">
   <defs
      id="defs4621" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="35.415783"
-     inkscape:cy="182.68228"
+     inkscape:zoom="2.8"
+     inkscape:cx="114.17268"
+     inkscape:cy="154.01499"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -36,7 +36,7 @@
      inkscape:snap-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-bbox="true"
-     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox-midpoints="false"
      inkscape:snap-bbox-edge-midpoints="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-grids="true"
@@ -45,15 +45,17 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1316"
-     inkscape:window-height="1183"
-     inkscape:window-x="604"
+     inkscape:window-width="1436"
+     inkscape:window-height="1063"
+     inkscape:window-x="484"
      inkscape:window-y="0"
-     inkscape:window-maximized="0">
+     inkscape:window-maximized="0"
+     inkscape:snap-nodes="true"
+     inkscape:snap-global="true">
     <inkscape:grid
        type="xygrid"
        id="grid5167"
-       originx="-251.34391"
+       originx="-251.34393"
        originy="-392.00001" />
   </sodipodi:namedview>
   <metadata
@@ -64,7 +66,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -72,7 +74,7 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-251.3439,-441.86133)">
+     transform="translate(-251.3439,-338.11219)">
     <path
        style="fill:#f4abaf;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 384.04959,465.29752 c 3.24416,-0.76584 7.83772,0.94591 11,2 7.90569,2.63523 14.41884,8.8117 20,15 6.50869,7.21674 10.32349,16.48092 15,25 3.58672,6.53383 7.58105,12.94988 10,20 5.51606,16.07675 8.32518,33.08599 10,49.99999 2.13498,21.56122 17.57691,52.33128 0,65 -21.37811,15.40847 -55.09204,-7.73392 -75,-25 -2.81541,-2.44179 -4.14376,-6.37292 -5,-10 -9.19012,-38.92996 -6.40729,-80.51649 0,-119.99999 0.84423,-5.2024 2.05768,-11.27941 5,-15 2.42448,-3.06577 5.06108,-5.9472 8.45686,-6.85483 0.54314,-0.14517 0.36006,-0.10195 0.54314,-0.14517 z"
