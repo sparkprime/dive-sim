@@ -634,15 +634,15 @@ function update_view() {
     ears_warning.style.visibility = 'hidden';
     equalize_attempt.style.visibility = 'hidden';
     equalize_failure.style.visibility = 'hidden';
-    if (ear_pain_qty < 0.1) {
+    if (ear_pain_qty < 0.09) {
         // Nothing to do.
-    } else if (ear_pain_qty < 0.2) {
+    } else if (ear_pain_qty < 0.18) {
         ears_pressure.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.3) {
+    } else if (ear_pain_qty < 0.27) {
         ears_uncomfortable.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.4) {
+    } else if (ear_pain_qty < 0.36) {
         ears_pain.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.5) {
+    } else if (ear_pain_qty < 0.45) {
         ears_pain.style.visibility = 'visible';
         if ((dive_time_s * 3) % 1 > 0.7) {
             ears_warning.style['visibility'] = 'visible';
