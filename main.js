@@ -1,6 +1,5 @@
 var water_density_kg_l = 1.025;
 var air_density_kg_l = 0.0012;
-var max_depth = 40;
 var god_mode = false;
 var topo_coords = [];
 var bubble_rise_speed = 1.3;  // Can be more, according to randoness.
@@ -29,6 +28,7 @@ var ear_rupture_bar = 0.5;
 var ear_no_equalize_bar = 0.3;
 var ear_equalize_rate_bar_s = 0.1;
 var swim_speed_m_s = 1;
+var lung_dead_space_l = 0.15;
 
 var tank_o2_conc = 0.2095;
 var tank_volume_l = 10;  // At 1 ATM.
@@ -49,6 +49,7 @@ var game_state;
 var distance_m;
 var direction;
 var lung_volume_l;
+var dead_space_fresh_l;  // Amount of fresh air in the dead spaces.
 var ear_bar;
 var lung_o2_conc;
 var bcd_contents_l;
@@ -76,7 +77,9 @@ function toggle_pause() {
     }
 }
 
-function do_game_over(msg) {
+function do_game_over(msg, title) {
+    title = title || "Game over!"
+    game_over_title.innerHTML = title;
     game_over_msg.innerHTML = msg;
     set_game_state('GAME_OVER');
 }
@@ -135,6 +138,7 @@ function reset_game() {
     distance_m = 10.5;
     direction = 1;  // Right, or -1 to go left.
     lung_volume_l = 0.5 * lung_capacity_l;
+    dead_space_fresh_l = 0.5 * lung_dead_space_l;
     ear_bar = 1.01325;
     lung_o2_conc = 0.19;
     bcd_contents_l = 9;
@@ -156,6 +160,11 @@ function pressure_bar() {
     } else {
         return 1.01325 - height_m / 10;
     }
+}
+
+function tank_gauge() {
+    return Math.max(
+        0, tank_contents_l / tank_volume_l - pressure_bar());
 }
 
 function total_mass_kg() {
@@ -404,18 +413,30 @@ function update_simulation(elapsed_s) {
             // This can happen when the tank was emptied and then sunk.
             inhaled_l = 0;
         }
+        let after_dead_space = Math.max(
+            0, inhaled_l - (lung_dead_space_l - dead_space_fresh_l));
+        dead_space_fresh_l += inhaled_l - after_dead_space;
+        inhaled_l = after_dead_space;
         let old_o2 = lung_volume_l * lung_o2_conc;
         let new_o2 = inhaled_l * tank_o2_conc;
         lung_volume_l += inhaled_l;
         tank_contents_l -= inhaled_l * pressure_bar();
         lung_o2_conc = (old_o2 + new_o2) / lung_volume_l;
+
     } else if (down_pressed && !up_pressed && !enter_pressed) {
-        // Breathe out (bubbles).
-        lung_volume_l -= elapsed_s * breathe_rate_l_s;
-        if (lung_volume_l < lung_residual_volume_l) {
-            lung_volume_l = lung_residual_volume_l;
-        } else {
+        // Breathe out.
+        let exhaled_air_l = elapsed_s * breathe_rate_l_s;
+        if (lung_volume_l - exhaled_air_l < lung_residual_volume_l) {
+            exhaled_air_l = lung_volume_l - lung_residual_volume_l;
+        }
+        if (exhaled_air_l > 0) {
+            lung_volume_l -= exhaled_air_l
             diver_bubble(elapsed_s);
+            let freshness = (tank_o2_conc - lung_o2_conc) / tank_o2_conc;
+            dead_space_fresh_l -= freshness * exhaled_air_l;
+            if (dead_space_fresh_l < 0) {
+                dead_space_fresh_l = 0;
+            }
         }
     }
 
@@ -531,6 +552,20 @@ function update_simulation(elapsed_s) {
                 + 'narrow spaces.</p>'
             );
         }
+        if (height_m >= 0 && distance_m > 10.5 && distance_m < 11.5) {
+            if (treasure_collected >= treasure_chest_positions.length) {
+                msg = [
+                    '<p>You have completed your dive!</p>',
+                    '<table>',
+                    '<tr><td>Max depth:</td> <td>' + (-min_height_m).toFixed(1) + 'm</td></tr>',
+                    '<tr><td>Dive time:</td> <td>' + Math.floor((dive_time_s / 60)) + ' minutes</td></tr>',
+                    '<tr><td>Treasure collected:</td> <td>' + treasure_collected + ' chests</td></tr>',
+                    '<tr><td>Remaining tank pressure:</td> <td>' + Math.floor(tank_gauge()) + ' bar</td></tr>',
+                    '</table>',
+                ]
+                do_game_over(msg.join('\n'), 'Congratulations!');
+            }
+        }
     }
 
     dive_time_s += elapsed_s;
@@ -543,10 +578,8 @@ function format_number(number, digits, dec) {
 
 function update_view() {
 
-    let tank_gauge = Math.max(
-        0, tank_contents_l / tank_volume_l - pressure_bar());
     gauge_needle.style['transform'] =
-        'rotate(' + (tank_gauge / 50 * 30) + 'deg)';
+        'rotate(' + (tank_gauge() / 50 * 30) + 'deg)';
 
     position(diver, distance_m, height_m);
     if (direction > 0) {

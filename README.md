@@ -6,9 +6,10 @@ modelled:
 
 - Gas supply
 - Diver metabolism
+- Lung dynamics and dead air space
 - Buoyancy of diver
 - Buoyancy compensation device
-- Buoyancy of all equipment
+- Buoyancy of full vs empty tank
 - Equalization of ears
 - Affect of environmental pressure on lungs, air consumption and tank gauge.
 

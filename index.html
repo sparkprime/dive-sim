@@ -46,8 +46,8 @@
         <div id=text>
         </div>
         <div id=game_over class=dialog>
-            <h1>Game over!</h1>
-            <p id=game_over_msg>You forgot to breathe.</p>
+            <h1 id=game_over_title>Should never be seen.</h1>
+            <p id=game_over_msg>Should never be seen.</p>
             <div>
                 <button onclick='reset_game()'>Play again</button>
             </div>
@@ -72,6 +72,7 @@
                 <tr><td>Swim right</td> <td><code>Right</code></td></tr>
                 <tr><td>Inflate <a href="https://en.wikipedia.org/wiki/Buoyancy_compensator_(diving)">BCD</a></td> <td><code>[</code></td></tr>
                 <tr><td>Deflate BCD</td> <td><code>]</code></td></tr>
+                <tr><td>Pause</td> <td><code>P</code></td></tr>
                 <tr><td><a
                 href=https://www.diversalertnetwork.org/health/SmartGuide-Ear/index.html>Equalize</a> ears</td> <td><code>Enter</code></td></tr>
             </table>
@@ -109,10 +110,8 @@ set_game_state('SPLASH');
 TODO list
 ---------
 
-pick up treasure
-
 Basic necessities:
-_- model throat and other dead spaces to encourage deep steady breathing
+- make ears smaller
 
 Other features:
 - clear mask

@@ -9,6 +9,7 @@ div#money {
 
 img.dollar_found {
     margin: 0 4px;
+    filter: saturate(1); /* Shouldn't be needed, maybe a bug. */
 }
 
 img.dollar {
