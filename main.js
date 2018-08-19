@@ -2,7 +2,7 @@ var water_density_kg_l = 1.025;
 var air_density_kg_l = 0.0012;
 var god_mode = false;
 var topo_coords = [];
-var bubble_rise_speed = 1.3;  // Can be more, according to randoness.
+var bubble_rise_speed = 0.3;  // Can be more, according to randoness.
 var bubble_interval = 0.1;
 var max_bubbles = 100;
 var zoom = 0.05;
@@ -61,6 +61,8 @@ var equalizing;
 var blood_o2_sat;
 var equalize_pressure_too_great;
 var treasure_collected;
+var n2_exposure;  // From 0 to 1, where 1 means "no-deco time all gone".
+var no_deco_time_s;
 
 function set_game_state(v) {
     game_state = v;
@@ -151,7 +153,12 @@ function reset_game() {
     blood_o2_sat = 1;
     clear_bubbles();
     reset_treasure();
+    n2_exposure = 0;
     set_game_state('RUNNING');
+}
+
+function n2_exposure_rate(depth_m) {
+    return Math.pow((depth_m), 2.22) * 0.00000047;
 }
 
 function pressure_bar() {
@@ -308,7 +315,7 @@ function update_bubbles(elapsed_s) {
             continue;
         }
         bubble.bubbleY +=
-            (bubble_rise_speed + 0.5 * bubble.bubbleRandom) * elapsed_s;
+            (bubble_rise_speed + 0.2 * bubble.bubbleRandom) * elapsed_s;
 
         // Graphics
         position(bubble, bubble.bubbleX, bubble.bubbleY);
@@ -514,9 +521,25 @@ function update_simulation(elapsed_s) {
         if (distance_m > 99) distance_m = 99;
     }
 
+    // Nitrogen dissolved in blood system.
+    if (height_m < 0) {
+        n2_exposure += elapsed_s * n2_exposure_rate(-height_m);
+    }
+    n2_exposure -= elapsed_s * 0.000166;  // Nitrogen coming out of the blood naturally.
+    if (n2_exposure < 0) n2_exposure = 0;
+    no_deco_time_s = 1 / n2_exposure_rate(-height_m) * (1 - n2_exposure);
+
     // Game state changes:
     test_treasure();
     if (!god_mode) {
+        if (n2_exposure > 1) {
+            do_game_over(
+                '<p>You have exceeded your no-decompression limit.</p>'
+                + '<p>This puts you at risk of decompression sickness '
+                + '("the bends").  Lengthy emergency decompression stops are '
+                + 'required on ascent, to avoid a life-threatening situation.</p>'
+            );
+        }
         if (blood_o2_sat <= 0.8) {
             do_game_over(
                 '<p>You forgot to breathe.</p>'
@@ -539,8 +562,8 @@ function update_simulation(elapsed_s) {
                 + '<p>When descending, the air space in your inner ear must be '
                 + 'continually equalized ([enter] key) to the increasing '
                 + 'environmental pressure.  Otherwise, the force pushing '
-                + 'against the ear drum may rupture it, requiring immediate '
-                + 'medical attention.</p>'
+                + 'against the ear drum may rupture it, risking infection '
+                + 'or permanent hearing loss.</p>'
             );
         }
         if (inside_topo(distance_m, height_m)
@@ -552,19 +575,21 @@ function update_simulation(elapsed_s) {
                 + 'narrow spaces.</p>'
             );
         }
-        if (height_m >= 0 && distance_m > 10.5 && distance_m < 11.5) {
-            if (treasure_collected >= treasure_chest_positions.length) {
-                msg = [
-                    '<p>You have completed your dive!</p>',
-                    '<table>',
-                    '<tr><td>Max depth:</td> <td>' + (-min_height_m).toFixed(1) + 'm</td></tr>',
-                    '<tr><td>Dive time:</td> <td>' + Math.floor((dive_time_s / 60)) + ' minutes</td></tr>',
-                    '<tr><td>Treasure collected:</td> <td>' + treasure_collected + ' chests</td></tr>',
-                    '<tr><td>Remaining tank pressure:</td> <td>' + Math.floor(tank_gauge()) + ' bar</td></tr>',
-                    '</table>',
-                ]
-                do_game_over(msg.join('\n'), 'Congratulations!');
-            }
+    }
+
+    // Can still win, even if god mode is on.
+    if (height_m >= 0 && distance_m > 10.5 && distance_m < 11.5) {
+        if (treasure_collected >= treasure_chest_positions.length) {
+            msg = [
+                '<p>You have completed your dive!</p>',
+                '<table>',
+                '<tr><td>Max depth:</td> <td>' + (-min_height_m).toFixed(1) + 'm</td></tr>',
+                '<tr><td>Dive time:</td> <td>' + Math.floor((dive_time_s / 60)) + ' minutes</td></tr>',
+                '<tr><td>Treasure collected:</td> <td>' + treasure_collected + ' chests</td></tr>',
+                '<tr><td>Remaining tank pressure:</td> <td>' + Math.floor(tank_gauge()) + ' bar</td></tr>',
+                '</table>',
+            ]
+            do_game_over(msg.join('\n'), 'Congratulations!');
         }
     }
 
@@ -625,7 +650,8 @@ function update_view() {
     depth.innerHTML = format_number(-height_m, 2, 1);
     max_depth.innerHTML = format_number(-min_height_m, 2, 1);
     dive_time.innerHTML = format_number(dive_time_s / 60, 2, 0);
-    no_deco_time.innerHTML = format_number(99, 2, 0);
+    no_deco_time.innerHTML =
+        format_number(Math.min(99, no_deco_time_s / 60), 2, 0);
 
     let ear_pain_qty = Math.abs(ear_bar - pressure_bar());
     ears_pressure.style.visibility = 'hidden';
@@ -634,15 +660,15 @@ function update_view() {
     ears_warning.style.visibility = 'hidden';
     equalize_attempt.style.visibility = 'hidden';
     equalize_failure.style.visibility = 'hidden';
-    if (ear_pain_qty < 0.09) {
+    if (ear_pain_qty < 0.07) {
         // Nothing to do.
     } else if (ear_pain_qty < 0.18) {
         ears_pressure.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.27) {
+    } else if (ear_pain_qty < 0.3) {
         ears_uncomfortable.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.36) {
+    } else if (ear_pain_qty < 0.4) {
         ears_pain.style.visibility = 'visible';
-    } else if (ear_pain_qty < 0.45) {
+    } else {
         ears_pain.style.visibility = 'visible';
         if ((dive_time_s * 3) % 1 > 0.7) {
             ears_warning.style['visibility'] = 'visible';

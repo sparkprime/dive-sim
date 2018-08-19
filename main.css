@@ -1,6 +1,7 @@
 body {
     margin: 0;
     background-color: #d2e9ff;
+    pointer-events: none;
 }
 
 div#money {
@@ -36,6 +37,7 @@ img.dollar {
 }
 
 .dialog {
+    pointer-events: auto;
     box-shadow: 0 0 32px 32px white;
     font-size: 14px;
     z-index: 30;
