@@ -12,6 +12,7 @@ modelled:
 - Buoyancy of full vs empty tank
 - Equalization of ears
 - Affect of environmental pressure on lungs, air consumption and tank gauge.
+- Nitrogen in the body and dive computer NO DECO time
 
 Try it out [here](https://sparkprime.github.io/dive-sim/).
 
