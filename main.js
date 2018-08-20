@@ -527,7 +527,11 @@ function update_simulation(elapsed_s) {
     }
     n2_exposure -= elapsed_s * 0.000166;  // Nitrogen coming out of the blood naturally.
     if (n2_exposure < 0) n2_exposure = 0;
-    no_deco_time_s = 1 / n2_exposure_rate(-height_m) * (1 - n2_exposure);
+    if (height_m < 0) {
+        no_deco_time_s = 1 / n2_exposure_rate(-height_m) * (1 - n2_exposure);
+    } else {
+        // It's going to be very high, and will be clipped to 99 in the GUI.
+    }
 
     // Game state changes:
     test_treasure();
