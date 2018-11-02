@@ -14,7 +14,7 @@
    viewBox="0 0 310.00001 103.99999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.2pre0 (973e216, 2017-07-25)"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="diver.svg">
   <defs
      id="defs4" />
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="4.216129"
-     inkscape:cx="155"
-     inkscape:cy="51.999988"
+     inkscape:zoom="2.9812534"
+     inkscape:cx="168.79982"
+     inkscape:cy="72.279254"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -36,9 +36,9 @@
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="false"
      inkscape:bbox-paths="true"
-     inkscape:window-width="1471"
-     inkscape:window-height="1063"
-     inkscape:window-x="449"
+     inkscape:window-width="1436"
+     inkscape:window-height="1183"
+     inkscape:window-x="484"
      inkscape:window-y="0"
      inkscape:window-maximized="0"
      fit-margin-top="0"
@@ -77,10 +77,10 @@
     <rect
        style="fill:#5a5a7c;fill-opacity:1;stroke:none"
        id="rect4258"
-       width="90"
-       height="30"
-       x="260"
-       y="132.3622" />
+       width="84.307571"
+       height="23.999985"
+       x="265.69241"
+       y="138.36221" />
     <circle
        style="fill:#ffc285;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="path3377"
@@ -91,21 +91,21 @@
        style="fill:#c8c8c8;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="path3379"
        cx="350.5"
-       cy="118.86221"
+       cy="118.50644"
        r="20" />
-    <circle
+    <path
        style="fill:#c8c8c8;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 282,118.36221 c 0,11.04569 -8.9545,20.06569 -20,20 -19.94011,-0.11859 -19.94749,-0.17868 -20,-20 -0.0525,-19.821802 0.0599,-19.762813 20,-19.999997 11.04491,-0.131377 20,8.954307 20,19.999997 z"
        id="path3379-6"
-       cx="240"
-       cy="118.36221"
-       r="20" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="sssss" />
     <rect
        style="fill:#c8c8c8;fill-opacity:1;stroke:none"
        id="rect4196"
-       width="110"
+       width="89.19426"
        height="40"
-       x="240"
-       y="98.362206" />
+       x="260.80576"
+       y="98.362213" />
     <ellipse
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="path3377-7"

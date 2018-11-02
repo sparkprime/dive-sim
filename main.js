@@ -15,6 +15,17 @@ var treasure_chest_positions = [
     [86.4, -34.95],
 ];
 
+var fish_positions = [
+    [14, -3, 'clown-fish.svg', 1],
+    [37, -6, 'clown-fish.svg', 1],
+    [27, -3, 'clown-fish.svg', 1],
+    [53, -21, 'barracuda.svg', 3],
+    [71, -31, 'barracuda.svg', 3],
+    [20, -33.5, 'barracuda.svg', 3],
+];
+var fish_zone_width = 5;
+var fish_zone_height = 4;
+
 var body_mass_kg = 80;
 var body_displacement_l = 77;
 var rest_o2_consumption_l_s = 0.01;
@@ -86,6 +97,7 @@ function do_game_over(msg, title) {
     set_game_state('GAME_OVER');
 }
 
+var fishes = [];
 var treasure_chests = [];
 
 function update_money() {
@@ -100,20 +112,41 @@ function update_money() {
     money.innerHTML = imgs.join('');
 }
 
+function make_img(filename, class_name, x, y) {
+    let img = document.createElement('IMG');
+    img.src = filename;
+    img.className = class_name;
+    img.spriteX = x;
+    img.spriteY = y;
+    img.onload = function() {
+        position(img, img.spriteX, img.spriteY, 1);
+    }
+    world.appendChild(img);
+    return img;
+}
+
+function reset_fish() {
+    for (let fish of fishes) {
+        world.removeChild(fish);
+    }
+    fishes = [];
+    for (let fish_pos of fish_positions) {
+        let fish = make_img(fish_pos[2], 'sprite', fish_pos[0], fish_pos[1]);
+        fish.speed = fish_pos[3];
+        fish.velocityX = fish.speed * 0.4 * Math.random() - 0.2;
+        fish.velocityY = fish.speed * 0.2 * Math.random() - 0.1;
+        fishes.push(fish);
+    }
+}
+
 function reset_treasure() {
     for (let chest of treasure_chests) {
         world.removeChild(chest);
     }
     treasure_chests = [];
     for (let chest_pos of treasure_chest_positions) {
-        let chest = document.createElement('IMG');
-        chest.src = 'treasure.svg';
+        let chest = make_img('treasure.svg', 'sprite', chest_pos[0], chest_pos[1]);
         chest.empty = false;
-        chest.className = 'treasure';
-        chest.onload = function() {
-            world.appendChild(chest);
-            position(chest, chest_pos[0], chest_pos[1]);
-        }
         treasure_chests.push(chest);
     }
     treasure_collected = 0;
@@ -153,6 +186,7 @@ function reset_game() {
     blood_o2_sat = 1;
     clear_bubbles();
     reset_treasure();
+    reset_fish();
     n2_exposure = 0;
     set_game_state('RUNNING');
 }
@@ -240,17 +274,12 @@ function make_bubble(elapsed_s, x, y) {
     time_since_last_bubble += elapsed_s;
     if (time_since_last_bubble < bubble_interval) return;
     time_since_last_bubble -= bubble_interval;
-    let bubble = document.createElement('IMG');
-    bubble.src = 'bubble.svg';
-    bubble.className = 'bubble';
-    bubble.bubbleX = x;
-    bubble.bubbleY = y;
+    let bubble = make_img('bubble.svg', 'bubble', x, y);
     bubble.bubbleRandom = Math.random();
-    world.appendChild(bubble);
     bubbles.push(bubble);
 }
 
-function diver_bubble(elapsed_s) {
+function regulator_bubble(elapsed_s) {
     make_bubble(
         elapsed_s,
         distance_m + direction * (0.6 + 0.2 * Math.random()),
@@ -284,41 +313,83 @@ function clear_bubbles() {
     }
 }
 
-function position(node, x, y) {
+function position(node, x, y, direction) {
+    if (direction >= 0) {
+        node.style['transform'] = 'scale(1, 1)';
+    } else {
+        node.style['transform'] = 'scale(-1, 1)';
+    }
     // Pixels are actually millimetres.
     node.style.left = (x * 1000 - node.clientWidth / 2) + 'px'
     node.style.top = (-y * 1000 - node.clientHeight / 2) + 'px'
 }
 
-function pan(x, y) {
-    x = Math.max(0, Math.min(100, x));
-    y = Math.max(-40, Math.min(0, y));
-    x *= 1000 * zoom;
-    y *= 1000 * zoom;
+function pan_depth(x, y, obj, qty) {
+    x *= zoom * 1000;
+    y *= zoom * 1000;
     x -= document.body.clientWidth / 2;
     y += document.body.clientHeight / 2;
     if (x < 0) x = 0;
     x = Math.min(x, 100 * zoom * 1000 - document.body.clientWidth);
+    x *= qty;
     y = Math.max(y, -40 * zoom * 1000 + document.body.clientHeight);
-    world.style.transform =
+    obj.style.transform =
         'translate(' + (-x) + 'px, ' + y + 'px) '
         + 'scale(' + zoom + ', ' + zoom + ')';
+}
+
+function pan(x, y) {
+    x = Math.max(0, Math.min(100, x));
+    y = Math.max(-40, Math.min(0, y));
+    pan_depth(x, y, world, 1);
+    pan_depth(x, y, world1, 0.7);
+    pan_depth(x, y, world2, 0.35);
 }
 
 function update_bubbles(elapsed_s) {
     for (let i = 0; i < bubbles.length; ++i) {
         let bubble = bubbles[i];
         // Physics
-        if (bubble.bubbleY > 0) {
+        if (bubble.spriteY > 0) {
             remove_bubble(i);
             i--;
             continue;
         }
-        bubble.bubbleY +=
+        bubble.spriteY +=
             (bubble_rise_speed + 0.2 * bubble.bubbleRandom) * elapsed_s;
 
         // Graphics
-        position(bubble, bubble.bubbleX, bubble.bubbleY);
+        position(bubble, bubble.spriteX, bubble.spriteY, 1);
+    } 
+}
+
+function update_fish(elapsed_s) {
+    for (let i = 0; i < fishes.length; ++i) {
+        let fish = fishes[i];
+        let fish_centre = fish_positions[i];
+        fish.spriteX += fish.speed * fish.velocityX * elapsed_s;
+        fish.spriteY += fish.speed * fish.velocityY * elapsed_s;
+        if (Math.random() < 0.01) {
+            fish.velocityX = 0.2 * Math.random() * Math.sign(fish.velocityX);
+            fish.velocityY = 0.2 * Math.random() - 0.1;
+        }
+        if (fish.spriteY > -1
+            || fish.spriteY > fish_centre[1] + fish_zone_height) {
+            fish.velocityY = -1 * Math.max(0.05, Math.abs(fish.velocityY));
+        }
+        if (fish.spriteY < fish_centre[1] - fish_zone_height) {
+            fish.velocityY = 1 * Math.max(0.05, Math.abs(fish.velocityY));
+        }
+        if (fish.spriteX > fish_centre[0] + fish_zone_width) {
+            fish.velocityX = -1 * Math.max(0.05, Math.abs(fish.velocityX));
+        }
+        if (fish.spriteX < fish_centre[0] - fish_zone_width) {
+            fish.velocityX = 1 * Math.max(0.05, Math.abs(fish.velocityX));
+        }
+
+        // Graphics
+        let direction = fish.velocityX;
+        position(fish, fish.spriteX, fish.spriteY, direction);
     } 
 }
 
@@ -438,7 +509,7 @@ function update_simulation(elapsed_s) {
         }
         if (exhaled_air_l > 0) {
             lung_volume_l -= exhaled_air_l
-            diver_bubble(elapsed_s);
+            regulator_bubble(elapsed_s);
             let freshness = (tank_o2_conc - lung_o2_conc) / tank_o2_conc;
             dead_space_fresh_l -= freshness * exhaled_air_l;
             if (dead_space_fresh_l < 0) {
@@ -525,12 +596,14 @@ function update_simulation(elapsed_s) {
     if (height_m < 0) {
         n2_exposure += elapsed_s * n2_exposure_rate(-height_m);
     }
-    n2_exposure -= elapsed_s * 0.000166;  // Nitrogen coming out of the blood naturally.
+    // Nitrogen coming out of the blood naturally.
+    n2_exposure -= elapsed_s * 0.000166;
     if (n2_exposure < 0) n2_exposure = 0;
     if (height_m < 0) {
         no_deco_time_s = 1 / n2_exposure_rate(-height_m) * (1 - n2_exposure);
     } else {
-        // It's going to be very high, and will be clipped to 99 in the GUI.
+        // It will be clipped to 99 in the GUI.
+        no_deco_time_s = 1000000000000000;
     }
 
     // Game state changes:
@@ -587,10 +660,22 @@ function update_simulation(elapsed_s) {
             msg = [
                 '<p>You have completed your dive!</p>',
                 '<table>',
-                '<tr><td>Max depth:</td> <td>' + (-min_height_m).toFixed(1) + 'm</td></tr>',
-                '<tr><td>Dive time:</td> <td>' + Math.floor((dive_time_s / 60)) + ' minutes</td></tr>',
-                '<tr><td>Treasure collected:</td> <td>' + treasure_collected + ' chests</td></tr>',
-                '<tr><td>Remaining tank pressure:</td> <td>' + Math.floor(tank_gauge()) + ' bar</td></tr>',
+                '<tr>',
+                '<td>Max depth:</td>',
+                '<td>' + (-min_height_m).toFixed(1) + 'm</td>',
+                '</tr>',
+                '<tr>',
+                '<td>Dive time:</td>',
+                '<td>' + Math.floor((dive_time_s / 60)) + ' minutes</td>',
+                '</tr>',
+                '<tr>',
+                '<td>Treasure collected:</td>',
+                '<td>' + treasure_collected + ' chests</td>',
+                '</tr>',
+                '<tr>',
+                '<td>Remaining tank pressure:</td>',
+                '<td>' + Math.floor(tank_gauge()) + ' bar</td>',
+                '</tr>',
                 '</table>',
             ]
             do_game_over(msg.join('\n'), 'Congratulations!');
@@ -610,12 +695,7 @@ function update_view() {
     gauge_needle.style['transform'] =
         'rotate(' + (tank_gauge() / 50 * 30) + 'deg)';
 
-    position(diver, distance_m, height_m);
-    if (direction > 0) {
-        diver.style['transform'] = 'scale(1, 1)';
-    } else {
-        diver.style['transform'] = 'scale(-1, 1)';
-    }
+    position(diver, distance_m, height_m, direction);
 
     blood_o2_status = null;
     if (blood_o2_sat > 0.95) {
@@ -697,6 +777,7 @@ function tick() {
     if (game_state == 'RUNNING') {
         update_simulation(elapsed_s);
         update_bubbles(elapsed_s);
+        update_fish(elapsed_s);
         pan(distance_m, height_m)
     }
     update_view();

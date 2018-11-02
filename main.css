@@ -99,13 +99,37 @@ img.dollar {
     position: absolute;
 }
 
+#world1 {
+    position: absolute;
+    z-index: -6;
+}
+
+#world2 {
+    position: absolute;
+    z-index: -7;
+}
+
 #topo {
+    position: absolute;
+    pointer-events: none;
+    width: 100000px;
+    height: 40000px;
+    z-index: -5;
+}
+
+#topo1 {
+    position: absolute;
+    pointer-events: none;
+    width: 100000px;
+    height: 40000px;
+}
+
+#topo2 {
     position: absolute;
     background-color: #6281bb;
     pointer-events: none;
     width: 100000px;
     height: 40000px;
-    z-index: -5;
 }
 
 div#diver {
@@ -122,14 +146,14 @@ img#dive_boat {
     position: absolute;
 }
 
+img.sprite {
+    position: absolute;
+}
+
 img.bubble {
     width: 200px;
     position: absolute;
     z-index: 10;
-}
-
-img.treasure {
-    position: absolute;
 }
 
 
